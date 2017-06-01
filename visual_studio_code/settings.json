@@ -14,7 +14,8 @@
     "typescript.tsdk": "C:\\Users\\tyleo\\AppData\\Roaming\\npm\\node_modules\\typescript\\lib",
 
     "window.menuBarVisibility": "toggle",
-    "window.zoomLevel": 2,
+    "window.reopenFolders": "none",
+    "window.zoomLevel": 1,
 
     "vim.useCtrlKeys": false,
     "vim.useSystemClipboard": true,
