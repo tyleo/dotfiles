@@ -1,27 +1,38 @@
 // Place your settings in this file to overwrite the default settings
 {
+    "cSpell.userWords": [
+        "tyleo"
+    ],
+    "debug.allowBreakpointsEverywhere": true,
     "editor.fontFamily": "Fira Code Retina",
     "editor.fontLigatures": true,
+    "editor.formatOnSave": true,
     "editor.renderWhitespace": "all",
-    "editor.rulers": [100],
-    "editor.minimap.enabled": true,
-
-    "rust.rls": {
-        "executable": "rustup",
-        "args": ["run", "nightly", "rls"]
+    "editor.rulers": [
+        100
+    ],
+    "files.associations": {
+        "*.flo": "json",
+        "*.flolib": "json",
+        "*.floproj": "json"
     },
-
-    "typescript.tsdk": "C:\\Users\\tyleo\\AppData\\Roaming\\npm\\node_modules\\typescript\\lib",
-
-    "window.menuBarVisibility": "toggle",
-    "window.reopenFolders": "none",
-    "window.zoomLevel": 1,
-
+    "git.autofetch": true,
+    "rust.mode": "rls",
+    "rust.rls": {
+        "useRustfmt": true,
+    },
+    "rust.rustup": {
+        "toolchain": "stable-x86_64-pc-windows-msvc",
+        "nightlyToolchain": "nightly-x86_64-pc-windows-msvc"
+    },
+    "tslint.autoFixOnSave": true,
+    "typescript.updateImportsOnFileMove.enabled": "always",
     "vim.useCtrlKeys": false,
     "vim.useSystemClipboard": true,
-
+    "window.menuBarVisibility": "toggle",
+    "window.restoreWindows": "none",
     "workbench.activityBar.visible": false,
-    "workbench.statusBar.visible": true,
-    "workbench.welcome.enabled": false,
-    "vim.disableAnnoyingNeovimMessage": true
+    "workbench.iconTheme": "vscode-icons",
+    "workbench.startupEditor": "newUntitledFile",
+    "workbench.statusBar.visible": true
 }
