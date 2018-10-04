@@ -1,0 +1,61 @@
+[core]
+    autocrlf = true
+[user]
+    name = Tyler Wolf Leonhardt
+    email = tyler.wolf.leonhardt@gmail.com
+[diff]
+    tool = araxis
+[difftool "araxis"]
+    path = C:\\Program Files\\Araxis\\Araxis Merge\\compare.exe
+[merge]
+    tool = araxis
+[mergetool "araxis"]
+    path = C:\\Program Files\\Araxis\\Araxis Merge\\compare.exe
+[alias]
+    dno = diff --name-only
+    dnop = diff --name-only HEAD~1
+    dnom = diff --name-only master
+    dnos = diff --name-only --staged
+
+    dt = difftool
+    dtp = difftool HEAD~1
+    dtm = difftool master
+    dts = difftool --staged
+
+    ddt = difftool --dir-diff
+    ddtp = difftool --dir-diff HEAD~1
+    ddtm = difftool --dir-diff master
+    ddts = difftool --dir-diff --staged
+
+    wmerge = merge --no-commit --no-ff
+
+    ahm = merge-base HEAD master
+    ri = rebase -i
+    rc = rebase --continue
+    ra = rebase --abort
+    lhm = log HEAD...master
+    lc = log -n 1
+    lp = log --stat-name-width=260 --stat-graph-width=20 --stat-width=280 --format="________________________________________________________________________________%n%n'#'' '%B"
+    lpc = log -n 1 --stat --stat-name-width=260 --stat-graph-width=20 --stat-width=280 --format="'#'' '%B"
+    lphm = log HEAD...master --stat --stat-name-width=260 --stat-graph-width=20 --stat-width=280 --format="________________________________________________________________________________%n%n'#'' '%B"
+
+    cg = config --global
+    cm = checkout master
+    ci = commit
+    com = commit -m
+    co = checkout
+    br = branch
+
+    la = config --get-regexp alias
+[rerere]
+    enabled = true
+[filter "lfs"]
+	smudge = git-lfs smudge -- %f
+	required = true
+	clean = git-lfs clean -- %f
+[credential]
+	helper = wincred
+[winUpdater]
+	recentlySeenVersion = 2.19.0.windows.1
+[core]
+  sshCommand = \"C:/Windows/System32/OpenSSH/ssh.exe\"
