@@ -1,5 +1,6 @@
 // Place your settings in this file to overwrite the default settings
 {
+    "cSpell.diagnosticLevel": "Hint",
     "cSpell.userWords": [
         "tyleo"
     ],
@@ -16,23 +17,28 @@
         "*.flolib": "json",
         "*.floproj": "json"
     },
+    "files.autoSave": "onWindowChange",
     "git.autofetch": true,
-    "rust.mode": "rls",
-    "rust.rls": {
-        "useRustfmt": true,
-    },
-    "rust.rustup": {
-        "toolchain": "stable-x86_64-pc-windows-msvc",
-        "nightlyToolchain": "nightly-x86_64-pc-windows-msvc"
-    },
-    "tslint.autoFixOnSave": true,
-    "typescript.updateImportsOnFileMove.enabled": "always",
+    "npm.packageManager": "yarn",
+    "prettier.tabWidth": 2,
+    "prettier.useTabs": false,
+    "typescript.updateImportsOnFileMove.enabled": "never",
     "vim.useCtrlKeys": false,
     "vim.useSystemClipboard": true,
     "window.menuBarVisibility": "toggle",
     "window.restoreWindows": "none",
     "workbench.activityBar.visible": false,
-    "workbench.iconTheme": "vscode-icons",
     "workbench.startupEditor": "newUntitledFile",
-    "workbench.statusBar.visible": true
+    "workbench.statusBar.visible": true,
+    "[markdown]": {
+        "editor.tabSize": 2
+    },
+    "magic-racket.general.racketPath": "Racket.exe",
+    "liveServer.settings.donotShowInfoMsg": true,
+    "aws.samcli.location": "C:\\Program Files\\Amazon\\AWSSAMCLI\\bin\\sam.cmd",
+    "aws.profile": "default",
+    "workbench.iconTheme": "vscode-icons",
+    "vsicons.dontShowNewVersionMessage": true,
+    "diffEditor.ignoreTrimWhitespace": true,
+    "window.zoomLevel": 1,
 }

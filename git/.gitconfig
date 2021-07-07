@@ -1,16 +1,37 @@
 [core]
     autocrlf = true
-[user]
-    name = Tyler Wolf Leonhardt
-    email = tyler.wolf.leonhardt@gmail.com
+    commentChar = @
+
+# Difftools
+
 [diff]
     tool = araxis
+
 [difftool "araxis"]
     path = C:\\Program Files\\Araxis\\Araxis Merge\\compare.exe
+
+[difftool "smerge"]
+    cmd = smerge mergetool "$BASE" "$LOCAL" "$REMOTE"
+    trustExitCode = true
+
+[difftool "vscode"]
+    cmd = code --wait --diff $LOCAL $REMOTE
+
+# Mergetools
+
 [merge]
     tool = araxis
+
 [mergetool "araxis"]
     path = C:\\Program Files\\Araxis\\Araxis Merge\\compare.exe
+
+[mergetool "smerge"]
+    cmd = smerge mergetool $BASE $LOCAL $REMOTE -o $MERGED
+    trustExitCode = true
+
+[mergetool "vscode"]
+    cmd = code --wait $MERGED
+
 [alias]
     dno = diff --name-only
     dnop = diff --name-only HEAD~1
@@ -22,22 +43,62 @@
     dtm = difftool master
     dts = difftool --staged
 
+    # directory difftool
+    # Used like "git ddtp production".
+    # Diffs the current branch against another branch, showing the differences in the directory
+    # difftool.
     ddt = difftool --dir-diff
-    ddtp = difftool --dir-diff HEAD~1
-    ddtm = difftool --dir-diff master
+    # directory difftool previous
+    # Used like "git ddtp" or "git ddtp production".
+    # Diffs the latest commit in a branch against the previous commit in the branch, showing the
+    # differences in the directory difftool.
+    # When used without an argument it will show you what the most recent commit on the current
+    # branch contains.
+    # When used with an argument it will show you what the most recent commit on the argument branch
+    # contains.
+    ddtp = "! git difftool --dir-diff ${1:-HEAD}~1 ${1:-}; :"
+    # directory difftool staged
+    # Used like "git ddts"
+    # Diffs the index against the head. For example, if you have run "git add" but have not yet
+    # committed, this will show all of the changes that have been added.
     ddts = difftool --dir-diff --staged
 
     wmerge = merge --no-commit --no-ff
 
+    # ancestor head master
     ahm = merge-base HEAD master
     ri = rebase -i
     rc = rebase --continue
     ra = rebase --abort
+    # log head master
     lhm = log HEAD...master
     lc = log -n 1
+    # log pretty
     lp = log --stat-name-width=260 --stat-graph-width=20 --stat-width=280 --format="________________________________________________________________________________%n%n'#'' '%B"
     lpc = log -n 1 --stat --stat-name-width=260 --stat-graph-width=20 --stat-width=280 --format="'#'' '%B"
+    # log pretty head master
     lphm = log HEAD...master --stat --stat-name-width=260 --stat-graph-width=20 --stat-width=280 --format="________________________________________________________________________________%n%n'#'' '%B"
+
+    # log author
+    lau = log --format=format:'%an'
+    # log graph
+    lg = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)'
+    # log graph all
+    lga = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)' --all
+    # log one line
+    lol = log --oneline
+    lcd = log production..HEAD --first-parent --format=format:'%C(cyan)%h%C(reset)%C(green) | %C(reset)%C(bold)%<(20)%an%C(reset)%C(green) | %C(reset)%s'
+    lsp = log --first-parent --format=format:'%C(cyan)%h%C(reset)%C(green) | %C(reset)%C(bold)%<(20)%an%C(reset)%C(green) | %C(reset)%s'
+    # log info
+    # Logs in the format AUTHOR | HASH | DATE | ONE-LINE-COMMIT-MSG
+    li = log --first-parent --format=format:'%C(reset)%C(bold)%<(20)%an%C(reset)%C(green) | %C(reset)%h%C(green) | %C(reset)%as%C(green) | %C(reset)%s'
+    # log info full
+    # Logs in the format AUTHOR | HASH | DATE | ONE-LINE-COMMIT-MSG
+    lif = log --format=format:'%C(reset)%C(bold)%<(20)%an%C(reset)%C(green) | %C(reset)%h%C(green) | %C(reset)%as%C(green) | %C(reset)%s'
+    # log cv2
+    # logs things committed by CV2 devs
+    # Use --author='\(Tyler Leonhardt\)\|\(Nidhi Ramanathan\)\|\(George Johnston\)\|\(Rob Giusti\)' on the command line for similar filtering
+    lcv2 = log --author='(Tyler Leonhardt)|(Nidhi Ramanathan)|(George Johnston)|(Rob Giusti)'
 
     cg = config --global
     cm = checkout master
@@ -47,15 +108,46 @@
     br = branch
 
     la = config --get-regexp alias
+
+    add-config-file = update-index --skip-worktree
+    remove-config-file = update-index --no-skip-worktree
+
+    # Pull a different branch than the one you are on.
+    pull-other = "! git fetch origin $1:$1; :"
+
+    # Clears the workspace of changes
+    clear = "! git add -A; git reset --hard; :"
+
+    # Pull a different branch than the one you are on and check it out.
+    checkout-latest = "! git pull-other $1; git checkout $1; :"
+
+    # Pull a different branch than the one you are on and check it out.
+    remove-last = "! git clear; git reset HEAD~1; git add -A; git stash; git reset HEAD~1 --hard; git stash pop; git add -A; git commit -m 'Top'; :"
+
+    # Used like "git log-new integration"
+    # Logs commits that exist in the second branch but not in the first branch.
+    # If a second branch is not provided, logs commits that exist in HEAD but not in the first branch.
+    # This is useful for seeing what will ship when you are merging a branch into a release branch.
+    log-new = "! first=$1; shift; if [[ $1 != -* ]]; then second=$1; shift; fi; git log $first..${second:-HEAD} $@; :"
+
+    # RecRoom
+    list-remote = for-each-ref --format=' %(authorname) %09 %(refname)' --sort=authorname
+    new-remote = push --set-upstream origin
+    delete-remote = push origin --delete
 [rerere]
     enabled = true
+[credential]
+	helper = manager
+	useHttpPath = true
+[user]
+	name = Tyler Wolf Leonhardt
+	email = tyler.wolf.leonhardt@gmail.com
 [filter "lfs"]
-	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
 	required = true
 	clean = git-lfs clean -- %f
-[credential]
-	helper = wincred
-[winUpdater]
-	recentlySeenVersion = 2.19.0.windows.1
-[core]
-  sshCommand = \"C:/Windows/System32/OpenSSH/ssh.exe\"
+	smudge = git-lfs smudge -- %f
+[gui]
+	recentrepo = C:/git/RecRoom
+[pull]
+	rebase = true
