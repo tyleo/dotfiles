@@ -1,7 +1,7 @@
 {
   "statusLine": {
     "type": "command",
-    "command": "bash C:/Users/tyleo/.claude/statusline-command.sh"
+    "command": "bash C:/Users/tyleo/.claude/status-line.sh"
   },
   "autoUpdatesChannel": "latest",
   "effortLevel": "high"
