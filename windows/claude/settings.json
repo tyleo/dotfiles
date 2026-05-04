@@ -1,7 +1,7 @@
 {
   "statusLine": {
     "type": "command",
-    "command": "bash C:/Users/tyleo/.claude/status-line.sh"
+    "command": "powershell.exe -NoProfile -NonInteractive -NoLogo -ExecutionPolicy Bypass -File C:/Users/tyleo/.claude/statusline.ps1"
   },
   "autoUpdatesChannel": "latest",
   "effortLevel": "high"
