@@ -16,6 +16,8 @@ $YELLOW = [char]27 + "[93m"
 $GREEN  = [char]27 + "[92m"
 # bright-cyan
 $BLUE   = [char]27 + "[96m"
+# 256-color medium-purple
+$PURPLE = [char]27 + "[38;5;141m"
 # Reset code
 $RESET  = [char]27 + "[0m"
 

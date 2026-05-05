@@ -14,6 +14,8 @@ readonly YELLOW=$'\033[93m'
 readonly GREEN=$'\033[92m'
 # bright-cyan
 readonly BLUE=$'\033[96m'
+# 256-color medium-purple
+readonly PURPLE=$'\033[38;5;141m'
 # Reset code
 readonly RESET=$'\033[0m'
 
