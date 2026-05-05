@@ -49,11 +49,6 @@ readonly ICON_BAR_RIGHT_FULL=$(printf   '\xee\xb8\x85')
 
 ## Reusable functions
 
-# Read a jq path from the cached JSON input. Returns empty string if missing.
-json_get() {
-    echo "$INPUT" | jq -r "$1 // empty"
-}
-
 # Wrap text in a color and reset.
 colorize() {
     local color="$1"; shift
@@ -67,27 +62,18 @@ repeat() {
     printf '%s' "$out"
 }
 
-# Resolve cwd (workspace.current_dir, falling back to .cwd).
-get_cwd() {
-    local c
-    c=$(json_get '.workspace.current_dir')
-    [ -z "$c" ] && c=$(json_get '.cwd')
-    printf '%s' "$c"
-}
-
 ## Segment formatters
 
 # These return empty string when the segment should be hidden
 
-# Context: database icon + 10-char bar + percentage
+# Context: database icon + 10-char bar + percentage. Arg: used_percentage (may be empty).
 format_context() {
-    local used_pct pct_int filled center_filled center_empty left_cap right_cap bar pct_str
-    used_pct=$(json_get '.context_window.used_percentage')
-    pct_int=$(printf '%.0f' "${used_pct:-0}")
+    local pct_int filled center_filled center_empty left_cap right_cap bar pct_str
+    pct_int=$(printf '%.0f' "${1:-0}")
     # 10 cells total (left cap + 8 center + right cap), each = 10%, floor mapping
     filled=$(( pct_int / 10 ))
     [ "$filled" -gt 10 ] && filled=10
-    if [ "$filled" -ge 1 ]; then left_cap="$ICON_BAR_LEFT_FULL";  else left_cap="$ICON_BAR_LEFT_EMPTY";  fi
+    if [ "$filled" -ge 1 ];  then left_cap="$ICON_BAR_LEFT_FULL";   else left_cap="$ICON_BAR_LEFT_EMPTY";   fi
     if [ "$filled" -ge 10 ]; then right_cap="$ICON_BAR_RIGHT_FULL"; else right_cap="$ICON_BAR_RIGHT_EMPTY"; fi
     center_filled=$(( filled - 1 ))
     [ "$center_filled" -lt 0 ] && center_filled=0
@@ -98,36 +84,34 @@ format_context() {
     colorize "$RED" "${ICON_DB} ${bar} ${pct_str}%"
 }
 
-# Model: lightbulb icon + display name (with leading "Claude " stripped)
+# Model: lightbulb icon + display name (with leading "Claude " stripped). Arg: display_name.
 format_model() {
-    local model_display short_model
-    model_display=$(json_get '.model.display_name')
-    [ -z "$model_display" ] && return
-    short_model=${model_display#Claude }
-    colorize "$ORANGE" "${ICON_BULB} ${short_model}"
+    local display_name="$1"
+    [ -z "$display_name" ] && return
+    colorize "$ORANGE" "${ICON_BULB} ${display_name#Claude }"
 }
 
-# Effort: bolt + level. Only present when the model exposes reasoning.
+# Effort: bolt + level. Only present when the model exposes reasoning. Arg: effort_level.
 format_effort() {
-    local effort_level
-    effort_level=$(json_get '.effort.level')
-    [ -z "$effort_level" ] && return
-    colorize "$YELLOW" "${ICON_BOLT} ${effort_level}"
+    [ -z "$1" ] && return
+    colorize "$YELLOW" "${ICON_BOLT} $1"
 }
 
-# Directory: folder icon + cwd, with $HOME collapsed to ~
+# Directory: folder icon + cwd, with $HOME collapsed to ~. Arg: cwd.
 format_directory() {
-    local cwd display_dir
-    cwd=$(get_cwd)
+    local cwd="$1" display_dir
     [ -z "$cwd" ] && return
-    display_dir="${cwd/#$HOME/~}"
+    case "$cwd" in
+        "$HOME")    display_dir="~" ;;
+        "$HOME"/*)  display_dir="~${cwd#$HOME}" ;;
+        *)          display_dir="$cwd" ;;
+    esac
     colorize "$GREEN" "${ICON_FOLDER} ${display_dir}"
 }
 
-# Git: branch icon + branch name (or short SHA on detached HEAD)
+# Git: branch icon + branch name (or short SHA on detached HEAD). Arg: cwd.
 format_git() {
-    local cwd branch
-    cwd=$(get_cwd)
+    local cwd="$1" branch
     [ -z "$cwd" ] && return
     git -C "$cwd" -c core.fsmonitor= rev-parse --git-dir >/dev/null 2>&1 || return
     branch=$(git -C "$cwd" -c core.fsmonitor= symbolic-ref --short HEAD 2>/dev/null \
@@ -136,14 +120,40 @@ format_git() {
     colorize "$BLUE" "${ICON_BRANCH} ${branch}"
 }
 
-## Main: read input once, render segments in order, join with spaces
+## Main: parse JSON in one jq call, render segments in order, join with spaces
 
-INPUT=$(cat)
+input=$(cat)
+
+# Extract every field we need in a single jq call (5 forks down to 1).
+# Each value lands on its own line; we feed the output through a heredoc
+# so consecutive empty lines don't get collapsed (which IFS=$'\t' would do)
+# and so we don't depend on bash-only process substitution (settings.json
+# may invoke this via /bin/sh, which disables `<( )` in POSIX mode).
+jq_out=$(echo "$input" | jq -r '
+    .context_window.used_percentage // "",
+    .model.display_name             // "",
+    .effort.level                   // "",
+    .workspace.current_dir          // "",
+    .cwd                            // ""
+')
+{
+    read -r ctx_pct
+    read -r model_display
+    read -r effort_level
+    read -r workspace_dir
+    read -r fallback_cwd
+} <<EOF
+$jq_out
+EOF
+cwd="${workspace_dir:-$fallback_cwd}"
 
 out=""
-for fn in format_context format_model format_effort format_directory format_git; do
-    seg=$("$fn")
+for seg in "$(format_context   "$ctx_pct")" \
+           "$(format_model     "$model_display")" \
+           "$(format_effort    "$effort_level")" \
+           "$(format_directory "$cwd")" \
+           "$(format_git       "$cwd")"; do
     [ -z "$seg" ] && continue
-    if [ -z "$out" ]; then out="$seg"; else out="$out $seg"; fi
+    out="${out:+$out }$seg"
 done
 echo "$out"

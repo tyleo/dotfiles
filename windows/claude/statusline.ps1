@@ -56,24 +56,14 @@ function Colorize($color, $text) {
     return "$color$text$RESET"
 }
 
-# Resolve cwd (workspace.current_dir, falling back to .cwd).
-function Get-Cwd($data) {
-    if ($data.workspace.current_dir) { return $data.workspace.current_dir }
-    return $data.cwd
-}
-
 ## Segment formatters
 
 # These return empty string when the segment should be hidden
 
-# Context: database icon + 10-char bar + percentage
-function Format-Context($data) {
-    $used_pct = $data.context_window.used_percentage
-    if ($null -ne $used_pct) {
-        $pct_int = [int][Math]::Round($used_pct)
-    } else {
-        $pct_int = 0
-    }
+# Context: database icon + 10-char bar + percentage. Arg: used_percentage (may be $null).
+function Format-Context($pct) {
+    if ($null -eq $pct) { $pct = 0 }
+    $pct_int = [int][Math]::Round($pct)
     # 10 cells total (left cap + 8 center + right cap), each = 10%, floor mapping
     # ([int] cast on a double uses banker's rounding, so use Math.Floor for true floor)
     $filled = [Math]::Min(10, [int][Math]::Floor($pct_int / 10))
@@ -89,22 +79,21 @@ function Format-Context($data) {
     return Colorize $RED "$ICON_DB $bar $pct_str%"
 }
 
-# Model: lightbulb icon + display name (with leading "Claude " stripped)
-function Format-Model($data) {
-    if (-not $data.model.display_name) { return "" }
-    $short_model = $data.model.display_name -replace '^Claude ', ''
+# Model: lightbulb icon + display name (with leading "Claude " stripped). Arg: display_name.
+function Format-Model($display_name) {
+    if (-not $display_name) { return "" }
+    $short_model = $display_name -replace '^Claude ', ''
     return Colorize $ORANGE "$ICON_BULB $short_model"
 }
 
-# Effort: bolt + level. Only present when the model exposes reasoning.
-function Format-Effort($data) {
-    if (-not $data.effort.level) { return "" }
-    return Colorize $YELLOW "$ICON_BOLT $($data.effort.level)"
+# Effort: bolt + level. Only present when the model exposes reasoning. Arg: effort_level.
+function Format-Effort($level) {
+    if (-not $level) { return "" }
+    return Colorize $YELLOW "$ICON_BOLT $level"
 }
 
-# Directory: folder icon + cwd, with $HOME collapsed to ~
-function Format-Directory($data) {
-    $cwd = Get-Cwd $data
+# Directory: folder icon + cwd, with $HOME collapsed to ~. Arg: cwd.
+function Format-Directory($cwd) {
     if (-not $cwd) { return "" }
     $home_dir    = $env:USERPROFILE -replace '\\','/'
     $display_cwd = $cwd -replace '\\','/'
@@ -116,9 +105,8 @@ function Format-Directory($data) {
     return Colorize $GREEN "$ICON_FOLDER $display_dir"
 }
 
-# Git: branch icon + branch name (or short SHA on detached HEAD)
-function Format-Git($data) {
-    $cwd = Get-Cwd $data
+# Git: branch icon + branch name (or short SHA on detached HEAD). Arg: cwd.
+function Format-Git($cwd) {
     if (-not $cwd) { return "" }
     $ErrorActionPreference = 'SilentlyContinue'
     $null = & git -C "$cwd" -c core.fsmonitor= rev-parse --git-dir 2>&1
@@ -132,14 +120,25 @@ function Format-Git($data) {
     return Colorize $BLUE "$ICON_BRANCH $branch"
 }
 
-## Main: read input once, render segments in order, join with spaces
+## Main: parse JSON once, render segments in order, join with spaces
 
 $input_json = [Console]::In.ReadToEnd()
 $data       = $input_json | ConvertFrom-Json
 
+# Extract every field we need once. Missing fields surface as $null.
+$ctx_pct       = $data.context_window.used_percentage
+$model_display = $data.model.display_name
+$effort_level  = $data.effort.level
+$cwd           = if ($data.workspace.current_dir) { $data.workspace.current_dir } else { $data.cwd }
+
 $parts = @()
-foreach ($fn in @('Format-Context','Format-Model','Format-Effort','Format-Directory','Format-Git')) {
-    $seg = & $fn $data
+foreach ($seg in @(
+    (Format-Context   $ctx_pct),
+    (Format-Model     $model_display),
+    (Format-Effort    $effort_level),
+    (Format-Directory $cwd),
+    (Format-Git       $cwd)
+)) {
     if ($seg) { $parts += $seg }
 }
 [Console]::Write(($parts -join ' '))
