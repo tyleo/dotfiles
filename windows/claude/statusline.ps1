@@ -1,66 +1,129 @@
 # Claude Code status line (Windows PowerShell)
-# Format: CCCCCCCCCC ##%  {bolt} Model Name [@ effort] | ~/git/repo   branch-name
+# Format: {db-icon} {context} {context-percent}% {bolt-icon} {model} {bulb-icon} {effort} {folder-icon} {working-directory} {branch-icon} {branch-name}
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding           = [System.Text.Encoding]::UTF8
 
-$input_json = [Console]::In.ReadToEnd()
-$data = $input_json | ConvertFrom-Json
+## Colors
 
-$cwd = if ($data.workspace.current_dir) { $data.workspace.current_dir } else { $data.cwd }
-
-# ANSI colors
-$YELLOW = [char]27 + "[93m"
+# 256-color light coral
+$RED    = [char]27 + "[38;5;203m"
+# 256-color orange
 $ORANGE = [char]27 + "[38;5;214m"
+# bright-yellow
+$YELLOW = [char]27 + "[93m"
+# bright-green
 $GREEN  = [char]27 + "[92m"
+# bright-cyan
 $BLUE   = [char]27 + "[96m"
+# Reset code
 $RESET  = [char]27 + "[0m"
 
-# Context bar
-$used_pct = $data.context_window.used_percentage
-if ($null -ne $used_pct) {
-    $pct_int    = [int][Math]::Round($used_pct)
+## Icons
+
+### Nerd Font glyphs
+
+# nf-fa-database | U+F1C0
+$ICON_DB     = [char]0xF1C0
+# nf-fa-bolt | U+F0E7
+$ICON_BOLT   = [char]0xF0E7
+# nf-md-lightbulb | U+F0335
+$ICON_BULB   = [char]::ConvertFromUtf32(0xF0335)
+# nf-fa-folder | U+F07B
+$ICON_FOLDER = [char]0xF07B
+# nf-pl-branch | U+E0A0
+$ICON_BRANCH = [char]0xE0A0
+
+## Unicode block elements
+
+# dark shade | U+2593
+$ICON_BAR_FILLED = [string][char]0x2593
+# light shade | U+2591
+$ICON_BAR_EMPTY  = [string][char]0x2591
+
+## Reusable functions
+
+# Wrap text in a color and reset.
+function Colorize($color, $text) {
+    return "$color$text$RESET"
+}
+
+# Resolve cwd (workspace.current_dir, falling back to .cwd).
+function Get-Cwd($data) {
+    if ($data.workspace.current_dir) { return $data.workspace.current_dir }
+    return $data.cwd
+}
+
+## Segment formatters
+
+# These return empty string when the segment should be hidden
+
+# Context: database icon + 10-char bar + percentage
+function Format-Context($data) {
+    $used_pct = $data.context_window.used_percentage
+    if ($null -ne $used_pct) {
+        $pct_int = [int][Math]::Round($used_pct)
+    } else {
+        $pct_int = 0
+    }
     $bar_filled = [int]($pct_int / 10)
     $bar_empty  = 10 - $bar_filled
-    $bar        = ([string][char]0x2593) * $bar_filled + ([string][char]0x2591) * $bar_empty
-    $context_part = ("${YELLOW}${bar} {0:D2}%${RESET}" -f $pct_int)
-} else {
-    $bar = ([string][char]0x2591) * 10
-    $context_part = "${YELLOW}${bar} 00%${RESET}"
+    $bar = ($ICON_BAR_FILLED * $bar_filled) + ($ICON_BAR_EMPTY * $bar_empty)
+    $pct_str = "{0:D2}" -f $pct_int
+    return Colorize $RED "$ICON_DB $bar $pct_str%"
 }
 
-# Model name: strip leading "Claude " (e.g. "Sonnet 4.6", "Opus 4.7")
-$model_part = ""
-if ($data.model.display_name) {
+# Model: bolt icon + display name (with leading "Claude " stripped)
+function Format-Model($data) {
+    if (-not $data.model.display_name) { return "" }
     $short_model = $data.model.display_name -replace '^Claude ', ''
-    $effort_str  = if ($data.effort.level) { " @ $($data.effort.level)" } else { "" }
-    $bolt_icon   = [char]0xF0E7
-    $model_part  = " ${ORANGE}${bolt_icon} ${short_model}${effort_str}${RESET}"
+    return Colorize $ORANGE "$ICON_BULB $short_model"
 }
 
-# Directory - replace home prefix with ~
-$home_dir    = $env:USERPROFILE -replace '\\','/'
-$display_cwd = $cwd -replace '\\','/'
-if ($display_cwd.StartsWith($home_dir, [System.StringComparison]::OrdinalIgnoreCase)) {
-    $display_dir = '~' + $display_cwd.Substring($home_dir.Length)
-} else {
-    $display_dir = $display_cwd
+# Effort: lightbulb + level. Only present when the model exposes reasoning.
+function Format-Effort($data) {
+    if (-not $data.effort.level) { return "" }
+    return Colorize $YELLOW "$ICON_BOLT $($data.effort.level)"
 }
 
-# Git branch (skip optional locks to avoid contention)
-$branch_part = ""
-$ErrorActionPreference = 'SilentlyContinue'
-$null = & git -C "$cwd" -c core.fsmonitor= rev-parse --git-dir 2>&1
-$ErrorActionPreference = 'Continue'
-if ($LASTEXITCODE -eq 0) {
+# Directory: folder icon + cwd, with $HOME collapsed to ~
+function Format-Directory($data) {
+    $cwd = Get-Cwd $data
+    if (-not $cwd) { return "" }
+    $home_dir    = $env:USERPROFILE -replace '\\','/'
+    $display_cwd = $cwd -replace '\\','/'
+    if ($display_cwd.StartsWith($home_dir, [System.StringComparison]::OrdinalIgnoreCase)) {
+        $display_dir = '~' + $display_cwd.Substring($home_dir.Length)
+    } else {
+        $display_dir = $display_cwd
+    }
+    return Colorize $GREEN "$ICON_FOLDER $display_dir"
+}
+
+# Git: branch icon + branch name (or short SHA on detached HEAD)
+function Format-Git($data) {
+    $cwd = Get-Cwd $data
+    if (-not $cwd) { return "" }
+    $ErrorActionPreference = 'SilentlyContinue'
+    $null = & git -C "$cwd" -c core.fsmonitor= rev-parse --git-dir 2>&1
+    $ErrorActionPreference = 'Continue'
+    if ($LASTEXITCODE -ne 0) { return "" }
     $branch = (& git -C "$cwd" -c core.fsmonitor= symbolic-ref --short HEAD 2>&1)
     if ($LASTEXITCODE -ne 0 -or -not $branch) {
         $branch = (& git -C "$cwd" -c core.fsmonitor= rev-parse --short HEAD 2>&1)
     }
-    if ($LASTEXITCODE -eq 0 -and $branch) {
-        $branch_icon = [char]0xE0A0
-        $branch_part = " ${BLUE}${branch_icon} ${branch}${RESET}"
-    }
+    if ($LASTEXITCODE -ne 0 -or -not $branch) { return "" }
+    return Colorize $BLUE "$ICON_BRANCH $branch"
 }
 
-[Console]::Write("${context_part}${model_part} | ${GREEN}${display_dir}${RESET}${branch_part}")
+## Main: read input once, render segments in order, join with spaces
+
+$input_json = [Console]::In.ReadToEnd()
+$data       = $input_json | ConvertFrom-Json
+
+$parts = @()
+foreach ($fn in @('Format-Context','Format-Model','Format-Effort','Format-Directory','Format-Git')) {
+    $seg = & $fn $data
+    if ($seg) { $parts += $seg }
+}
+[Console]::Write(($parts -join ' '))

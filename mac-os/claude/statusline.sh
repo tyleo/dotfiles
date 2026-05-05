@@ -1,76 +1,138 @@
 #!/bin/bash
 # Claude Code status line
-# Format: CCCCCCCCCC ##%  {robot} Model Name [effort] | ~/git/repo   branch-name
+# Format: {db-icon} {context} {context-percent}% {bolt-icon} {model} {bulb-icon} {effort} {folder-icon} {working-directory} {branch-icon} {branch-name}
 
-input=$(cat)
-cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd')
+## Colors
 
-YELLOW=$'\033[93m'
-ORANGE=$'\033[38;5;214m'
-GREEN=$'\033[92m'
-BLUE=$'\033[96m'
-RESET=$'\033[0m'
+# 256-color light coral
+readonly RED=$'\033[38;5;203m'
+# 256-color orange
+readonly ORANGE=$'\033[38;5;214m'
+# bright-yellow
+readonly YELLOW=$'\033[93m'
+# bright-green
+readonly GREEN=$'\033[92m'
+# bright-cyan
+readonly BLUE=$'\033[96m'
+# Reset code
+readonly RESET=$'\033[0m'
 
-# Context bar
-used_pct=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
-if [ -n "$used_pct" ]; then
-    pct_int=$(printf "%.0f" "$used_pct")
+## Icons
+
+### Nerd Font glyphs
+
+# nf-fa-database | U+F1C0
+readonly ICON_DB=$(printf '\xef\x87\x80')
+# nf-fa-bolt | U+F0E7
+readonly ICON_BOLT=$(printf '\xef\x83\xa7')
+# nf-md-lightbulb | U+F0335
+readonly ICON_BULB=$(printf '\xf3\xb0\x8c\xb5')
+# nf-fa-folder | U+F07B
+readonly ICON_FOLDER=$(printf '\xef\x81\xbb')
+# nf-pl-branch | U+E0A0
+readonly ICON_BRANCH=$(printf '\xee\x82\xa0')
+
+## Unicode block elements
+
+# dark shade | U+2593
+readonly ICON_BAR_FILLED='▓'
+# light shade | U+2591
+readonly ICON_BAR_EMPTY='░'
+
+## Reusable functions
+
+# Read a jq path from the cached JSON input. Returns empty string if missing.
+json_get() {
+    echo "$INPUT" | jq -r "$1 // empty"
+}
+
+# Wrap text in a color and reset.
+colorize() {
+    local color="$1"; shift
+    printf '%s%s%s' "$color" "$*" "$RESET"
+}
+
+# Repeat a single character N times.
+repeat() {
+    local char="$1" n="$2" out="" i=0
+    while [ "$i" -lt "$n" ]; do out="${out}${char}"; i=$(( i + 1 )); done
+    printf '%s' "$out"
+}
+
+# Resolve cwd (workspace.current_dir, falling back to .cwd).
+get_cwd() {
+    local c
+    c=$(json_get '.workspace.current_dir')
+    [ -z "$c" ] && c=$(json_get '.cwd')
+    printf '%s' "$c"
+}
+
+## Segment formatters
+
+# These return empty string when the segment should be hidden
+
+# Context: database icon + 10-char bar + percentage
+format_context() {
+    local used_pct pct_int bar_filled bar_empty bar pct_str
+    used_pct=$(json_get '.context_window.used_percentage')
+    if [ -n "$used_pct" ]; then
+        pct_int=$(printf '%.0f' "$used_pct")
+    else
+        pct_int=0
+    fi
     bar_filled=$(( pct_int / 10 ))
     bar_empty=$(( 10 - bar_filled ))
-    bar=""
-    i=0
-    while [ $i -lt $bar_filled ]; do
-        bar="${bar}▓"
-        i=$(( i + 1 ))
-    done
-    i=0
-    while [ $i -lt $bar_empty ]; do
-        bar="${bar}░"
-        i=$(( i + 1 ))
-    done
+    bar="$(repeat "$ICON_BAR_FILLED" "$bar_filled")$(repeat "$ICON_BAR_EMPTY" "$bar_empty")"
     pct_str=$(printf '%02d' "$pct_int")
-    context_part="${YELLOW}${bar} ${pct_str}%${RESET}"
-else
-    context_part="${YELLOW}░░░░░░░░░░ 00%${RESET}"
-fi
+    colorize "$RED" "${ICON_DB} ${bar} ${pct_str}%"
+}
 
-# Model name: strip leading "Claude " to get e.g. "Sonnet 4.6", "Opus 4"
-model_display=$(echo "$input" | jq -r '.model.display_name // empty')
-if [ -n "$model_display" ]; then
-    short_model=$(echo "$model_display" | sed 's/^Claude //')
-else
-    short_model=""
-fi
+# Model: bolt icon + display name (with leading "Claude " stripped)
+format_model() {
+    local model_display short_model
+    model_display=$(json_get '.model.display_name')
+    [ -z "$model_display" ] && return
+    short_model=${model_display#Claude }
+    colorize "$ORANGE" "${ICON_BULB} ${short_model}"
+}
 
-# Effort level (only present when model supports reasoning effort)
-effort_level=$(echo "$input" | jq -r '.effort.level // empty')
-if [ -n "$effort_level" ]; then
-    effort_str=" @ ${effort_level}"
-else
-    effort_str=""
-fi
+# Effort: lightbulb + level. Only present when the model exposes reasoning.
+format_effort() {
+    local effort_level
+    effort_level=$(json_get '.effort.level')
+    [ -z "$effort_level" ] && return
+    colorize "$YELLOW" "${ICON_BOLT} ${effort_level}"
+}
 
-# Model segment (bolt icon U+F0E7 = nf-fa-bolt, encoded as \xef\x83\xa7)
-magic_icon=$(printf '\xef\x83\xa7')
-if [ -n "$short_model" ]; then
-    model_part=" ${ORANGE}${magic_icon} ${short_model}${effort_str}${RESET}"
-else
-    model_part=""
-fi
+# Directory: folder icon + cwd, with $HOME collapsed to ~
+format_directory() {
+    local cwd display_dir
+    cwd=$(get_cwd)
+    [ -z "$cwd" ] && return
+    display_dir=$(echo "$cwd" | sed "s|^$HOME|~|")
+    colorize "$GREEN" "${ICON_FOLDER} ${display_dir}"
+}
 
-# Directory
-home="$HOME"
-display_dir=$(echo "$cwd" | sed "s|^$home|~|")
-
-# Git branch (skip optional locks to avoid contention)
-branch_part=""
-if git -C "$cwd" -c core.fsmonitor= rev-parse --git-dir >/dev/null 2>&1; then
+# Git: branch icon + branch name (or short SHA on detached HEAD)
+format_git() {
+    local cwd branch
+    cwd=$(get_cwd)
+    [ -z "$cwd" ] && return
+    git -C "$cwd" -c core.fsmonitor= rev-parse --git-dir >/dev/null 2>&1 || return
     branch=$(git -C "$cwd" -c core.fsmonitor= symbolic-ref --short HEAD 2>/dev/null \
              || git -C "$cwd" -c core.fsmonitor= rev-parse --short HEAD 2>/dev/null)
-    if [ -n "$branch" ]; then
-        branch_icon=$(printf '\xee\x82\xa0')
-        branch_part=" ${BLUE}${branch_icon} ${branch}${RESET}"
-    fi
-fi
+    [ -z "$branch" ] && return
+    colorize "$BLUE" "${ICON_BRANCH} ${branch}"
+}
 
-echo "${context_part}${model_part} | ${GREEN}${display_dir}${RESET}${branch_part}"
+## Main: read input once, render segments in order, join with spaces
+
+INPUT=$(cat)
+
+out=""
+for fn in format_context format_model format_effort format_directory format_git; do
+    seg=$("$fn")
+    [ -z "$seg" ] && continue
+    if [ -z "$out" ]; then out="$seg"; else out="$out $seg"; fi
+done
+echo "$out"
