@@ -86,11 +86,14 @@ format_context() {
     colorize "$RED" "${ICON_DB} ${bar} ${pct_str}%"
 }
 
-# Model: lightbulb icon + display name (with leading "Claude " stripped). Arg: display_name.
+# Model: lightbulb icon + display name with leading "Claude " and any trailing
+# parenthetical suffix (e.g. " (1M context)") stripped. Arg: display_name.
 format_model() {
     local display_name="$1"
     [ -z "$display_name" ] && return
-    colorize "$ORANGE" "${ICON_BULB} ${display_name#Claude }"
+    local short=${display_name#Claude }
+    short=${short% (*}
+    colorize "$ORANGE" "${ICON_BULB} ${short}"
 }
 
 # Effort: bolt + level. Only present when the model exposes reasoning. Arg: effort_level.

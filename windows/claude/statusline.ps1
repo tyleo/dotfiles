@@ -81,10 +81,11 @@ function Format-Context($pct) {
     return Colorize $RED "$ICON_DB $bar $pct_str%"
 }
 
-# Model: lightbulb icon + display name (with leading "Claude " stripped). Arg: display_name.
+# Model: lightbulb icon + display name with leading "Claude " and any trailing
+# parenthetical suffix (e.g. " (1M context)") stripped. Arg: display_name.
 function Format-Model($display_name) {
     if (-not $display_name) { return "" }
-    $short_model = $display_name -replace '^Claude ', ''
+    $short_model = $display_name -replace '^Claude ', '' -replace ' \(.*\)$', ''
     return Colorize $ORANGE "$ICON_BULB $short_model"
 }
 
