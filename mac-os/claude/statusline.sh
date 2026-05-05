@@ -1,6 +1,6 @@
 #!/bin/bash
 # Claude Code status line
-# Format: {db-icon} {context} {context-percent}% {bolt-icon} {model} {bulb-icon} {effort} {folder-icon} {working-directory} {branch-icon} {branch-name}
+# Format: {db-icon} {context} {context-percent}% {bulb-icon} {model} {bolt-icon} {effort} {folder-icon} {working-directory} {branch-icon} {branch-name}
 
 ## Colors
 
@@ -83,11 +83,7 @@ get_cwd() {
 format_context() {
     local used_pct pct_int filled center_filled center_empty left_cap right_cap bar pct_str
     used_pct=$(json_get '.context_window.used_percentage')
-    if [ -n "$used_pct" ]; then
-        pct_int=$(printf '%.0f' "$used_pct")
-    else
-        pct_int=0
-    fi
+    pct_int=$(printf '%.0f' "${used_pct:-0}")
     # 10 cells total (left cap + 8 center + right cap), each = 10%, floor mapping
     filled=$(( pct_int / 10 ))
     [ "$filled" -gt 10 ] && filled=10
@@ -102,7 +98,7 @@ format_context() {
     colorize "$RED" "${ICON_DB} ${bar} ${pct_str}%"
 }
 
-# Model: bolt icon + display name (with leading "Claude " stripped)
+# Model: lightbulb icon + display name (with leading "Claude " stripped)
 format_model() {
     local model_display short_model
     model_display=$(json_get '.model.display_name')
@@ -111,7 +107,7 @@ format_model() {
     colorize "$ORANGE" "${ICON_BULB} ${short_model}"
 }
 
-# Effort: lightbulb + level. Only present when the model exposes reasoning.
+# Effort: bolt + level. Only present when the model exposes reasoning.
 format_effort() {
     local effort_level
     effort_level=$(json_get '.effort.level')
@@ -124,7 +120,7 @@ format_directory() {
     local cwd display_dir
     cwd=$(get_cwd)
     [ -z "$cwd" ] && return
-    display_dir=$(echo "$cwd" | sed "s|^$HOME|~|")
+    display_dir="${cwd/#$HOME/~}"
     colorize "$GREEN" "${ICON_FOLDER} ${display_dir}"
 }
 

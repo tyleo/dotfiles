@@ -1,5 +1,5 @@
 # Claude Code status line (Windows PowerShell)
-# Format: {db-icon} {context} {context-percent}% {bolt-icon} {model} {bulb-icon} {effort} {folder-icon} {working-directory} {branch-icon} {branch-name}
+# Format: {db-icon} {context} {context-percent}% {bulb-icon} {model} {bolt-icon} {effort} {folder-icon} {working-directory} {branch-icon} {branch-name}
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding           = [System.Text.Encoding]::UTF8
@@ -75,7 +75,8 @@ function Format-Context($data) {
         $pct_int = 0
     }
     # 10 cells total (left cap + 8 center + right cap), each = 10%, floor mapping
-    $filled = [Math]::Min(10, [int]($pct_int / 10))
+    # ([int] cast on a double uses banker's rounding, so use Math.Floor for true floor)
+    $filled = [Math]::Min(10, [int][Math]::Floor($pct_int / 10))
     $left_cap  = if ($filled -ge 1)  { $ICON_BAR_LEFT_FULL }  else { $ICON_BAR_LEFT_EMPTY }
     $right_cap = if ($filled -ge 10) { $ICON_BAR_RIGHT_FULL } else { $ICON_BAR_RIGHT_EMPTY }
     $center_filled = [Math]::Max(0, [Math]::Min(8, $filled - 1))
@@ -88,14 +89,14 @@ function Format-Context($data) {
     return Colorize $RED "$ICON_DB $bar $pct_str%"
 }
 
-# Model: bolt icon + display name (with leading "Claude " stripped)
+# Model: lightbulb icon + display name (with leading "Claude " stripped)
 function Format-Model($data) {
     if (-not $data.model.display_name) { return "" }
     $short_model = $data.model.display_name -replace '^Claude ', ''
     return Colorize $ORANGE "$ICON_BULB $short_model"
 }
 
-# Effort: lightbulb + level. Only present when the model exposes reasoning.
+# Effort: bolt + level. Only present when the model exposes reasoning.
 function Format-Effort($data) {
     if (-not $data.effort.level) { return "" }
     return Colorize $YELLOW "$ICON_BOLT $($data.effort.level)"
