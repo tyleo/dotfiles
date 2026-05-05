@@ -34,12 +34,20 @@ $ICON_FOLDER = [char]0xF07B
 # nf-pl-branch | U+E0A0
 $ICON_BRANCH = [char]0xE0A0
 
-## Unicode block elements
+### Nerd Font progress-bar segments (Fira Code, U+EE00-U+EE05)
 
-# dark shade | U+2593
-$ICON_BAR_FILLED = [string][char]0x2593
-# light shade | U+2591
-$ICON_BAR_EMPTY  = [string][char]0x2591
+# left cap empty | U+EE00
+$ICON_BAR_LEFT_EMPTY   = [char]0xEE00
+# center cell empty | U+EE01
+$ICON_BAR_CENTER_EMPTY = [char]0xEE01
+# right cap empty | U+EE02
+$ICON_BAR_RIGHT_EMPTY  = [char]0xEE02
+# left cap full | U+EE03
+$ICON_BAR_LEFT_FULL    = [char]0xEE03
+# center cell full | U+EE04
+$ICON_BAR_CENTER_FULL  = [char]0xEE04
+# right cap full | U+EE05 (kept for completeness; unused under current spec)
+$ICON_BAR_RIGHT_FULL   = [char]0xEE05
 
 ## Reusable functions
 
@@ -66,9 +74,16 @@ function Format-Context($data) {
     } else {
         $pct_int = 0
     }
-    $bar_filled = [int]($pct_int / 10)
-    $bar_empty  = 10 - $bar_filled
-    $bar = ($ICON_BAR_FILLED * $bar_filled) + ($ICON_BAR_EMPTY * $bar_empty)
+    # 10 cells total (left cap + 8 center + right cap), each = 10%, floor mapping
+    $filled = [Math]::Min(10, [int]($pct_int / 10))
+    $left_cap  = if ($filled -ge 1)  { $ICON_BAR_LEFT_FULL }  else { $ICON_BAR_LEFT_EMPTY }
+    $right_cap = if ($filled -ge 10) { $ICON_BAR_RIGHT_FULL } else { $ICON_BAR_RIGHT_EMPTY }
+    $center_filled = [Math]::Max(0, [Math]::Min(8, $filled - 1))
+    $center_empty  = 8 - $center_filled
+    $bar = [string]$left_cap +
+           ([string]$ICON_BAR_CENTER_FULL  * $center_filled) +
+           ([string]$ICON_BAR_CENTER_EMPTY * $center_empty)  +
+           [string]$right_cap
     $pct_str = "{0:D2}" -f $pct_int
     return Colorize $RED "$ICON_DB $bar $pct_str%"
 }

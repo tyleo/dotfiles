@@ -32,12 +32,20 @@ readonly ICON_FOLDER=$(printf '\xef\x81\xbb')
 # nf-pl-branch | U+E0A0
 readonly ICON_BRANCH=$(printf '\xee\x82\xa0')
 
-## Unicode block elements
+### Nerd Font progress-bar segments (Fira Code, U+EE00-U+EE05)
 
-# dark shade | U+2593
-readonly ICON_BAR_FILLED='▓'
-# light shade | U+2591
-readonly ICON_BAR_EMPTY='░'
+# left cap empty | U+EE00
+readonly ICON_BAR_LEFT_EMPTY=$(printf   '\xee\xb8\x80')
+# center cell empty | U+EE01
+readonly ICON_BAR_CENTER_EMPTY=$(printf '\xee\xb8\x81')
+# right cap empty | U+EE02
+readonly ICON_BAR_RIGHT_EMPTY=$(printf  '\xee\xb8\x82')
+# left cap full | U+EE03
+readonly ICON_BAR_LEFT_FULL=$(printf    '\xee\xb8\x83')
+# center cell full | U+EE04
+readonly ICON_BAR_CENTER_FULL=$(printf  '\xee\xb8\x84')
+# right cap full | U+EE05 (kept for completeness; unused under current spec)
+readonly ICON_BAR_RIGHT_FULL=$(printf   '\xee\xb8\x85')
 
 ## Reusable functions
 
@@ -73,16 +81,23 @@ get_cwd() {
 
 # Context: database icon + 10-char bar + percentage
 format_context() {
-    local used_pct pct_int bar_filled bar_empty bar pct_str
+    local used_pct pct_int filled center_filled center_empty left_cap right_cap bar pct_str
     used_pct=$(json_get '.context_window.used_percentage')
     if [ -n "$used_pct" ]; then
         pct_int=$(printf '%.0f' "$used_pct")
     else
         pct_int=0
     fi
-    bar_filled=$(( pct_int / 10 ))
-    bar_empty=$(( 10 - bar_filled ))
-    bar="$(repeat "$ICON_BAR_FILLED" "$bar_filled")$(repeat "$ICON_BAR_EMPTY" "$bar_empty")"
+    # 10 cells total (left cap + 8 center + right cap), each = 10%, floor mapping
+    filled=$(( pct_int / 10 ))
+    [ "$filled" -gt 10 ] && filled=10
+    if [ "$filled" -ge 1 ]; then left_cap="$ICON_BAR_LEFT_FULL";  else left_cap="$ICON_BAR_LEFT_EMPTY";  fi
+    if [ "$filled" -ge 10 ]; then right_cap="$ICON_BAR_RIGHT_FULL"; else right_cap="$ICON_BAR_RIGHT_EMPTY"; fi
+    center_filled=$(( filled - 1 ))
+    [ "$center_filled" -lt 0 ] && center_filled=0
+    [ "$center_filled" -gt 8 ] && center_filled=8
+    center_empty=$(( 8 - center_filled ))
+    bar="${left_cap}$(repeat "$ICON_BAR_CENTER_FULL" "$center_filled")$(repeat "$ICON_BAR_CENTER_EMPTY" "$center_empty")${right_cap}"
     pct_str=$(printf '%02d' "$pct_int")
     colorize "$RED" "${ICON_DB} ${bar} ${pct_str}%"
 }
