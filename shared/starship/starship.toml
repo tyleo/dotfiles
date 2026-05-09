@@ -1,0 +1,63 @@
+format = """$directory$git_branch$git_state$git_status
+$character"""
+
+command_timeout = 2500
+
+[directory]
+
+style = "bright-green"
+truncate_to_repo = false
+
+# truncation_length = 4
+# truncation_symbol = "…/"
+
+# Git branch info
+[git_branch]
+
+style = "bright-cyan"
+symbol = ""
+
+format = "([$symbol $branch]($style) )"
+
+[git_state]
+style = 'bright-red'
+
+rebase = 'rebasing'
+merge = 'merging'
+revert = 'reverting'
+cherry_pick = 'cherry-picking'
+bisect = 'bisecting'
+am = 'am'
+am_or_rebase = 'am or rebase'
+
+format = '[\($state( $progress_current/$progress_total)\)]($style) '
+
+# Git status (like Posh-Git)
+[git_status]
+
+style = "fg:250"
+
+diverged = "[↕ ↑${ahead_count} ↓${behind_count}](bright-red) "
+ahead = "[↑${count}](bright-green) "
+behind = "[↓${count}](bright-yellow) "
+
+conflicted = "[✖](bright-red) "
+
+stashed = "[\\$${count}](fg:205) "
+
+staged = "[+${count}](bright-green) "
+renamed = "[»${count}](bright-green) "
+
+deleted = "[-${count}](fg:214) "
+
+modified = "[!${count}](bright-purple) "
+untracked = "[?${count}](bright-purple) "
+
+
+format = "([\\[ $state(progress_current/$progress_total)$ahead_behind$conflicted$stashed$staged$renamed$deleted$modified$untracked\\]]($style) )"
+
+# Prompt symbol
+[character]
+
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold green)"
