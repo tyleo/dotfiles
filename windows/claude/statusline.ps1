@@ -108,19 +108,62 @@ function Format-Directory($cwd) {
     return Colorize $GREEN "$ICON_FOLDER $display_dir"
 }
 
-# Git: branch icon + branch name (or short SHA on detached HEAD). Arg: cwd.
+# Git: branch icon + branch (or short SHA on detached HEAD), plus posh-git-style
+# status counts. One `git status` call covers branch + ahead/behind + file states;
+# stash count is read directly from the reflog file. Arg: cwd.
 function Format-Git($cwd) {
     if (-not $cwd) { return "" }
     $ErrorActionPreference = 'SilentlyContinue'
-    $null = & git -C "$cwd" -c core.fsmonitor= rev-parse --git-dir 2>&1
+    $porcelain = & git -C "$cwd" -c core.fsmonitor= status --porcelain=v2 --branch 2>$null
     $ErrorActionPreference = 'Continue'
     if ($LASTEXITCODE -ne 0) { return "" }
-    $branch = (& git -C "$cwd" -c core.fsmonitor= symbolic-ref --short HEAD 2>&1)
-    if ($LASTEXITCODE -ne 0 -or -not $branch) {
-        $branch = (& git -C "$cwd" -c core.fsmonitor= rev-parse --short HEAD 2>&1)
+
+    $branch = ""; $oid = ""
+    $ahead = 0; $behind = 0
+    $conflicted = 0; $staged = 0; $renamed = 0; $deleted = 0; $modified = 0; $untracked = 0
+    foreach ($line in $porcelain) {
+        if ($line.StartsWith('# branch.head ')) { $branch = $line.Substring(14) }
+        elseif ($line.StartsWith('# branch.oid '))  { $oid    = $line.Substring(13) }
+        elseif ($line -match '^# branch\.ab \+(\d+) -(\d+)') {
+            $ahead  = [int]$matches[1]
+            $behind = [int]$matches[2]
+        }
+        elseif ($line.StartsWith('1 ')) {
+            $x = $line[2]; $y = $line[3]
+            if ('MTADC'.Contains([string]$x)) { $staged++ }
+            switch ([string]$y) {
+                'M' { $modified++ }
+                'T' { $modified++ }
+                'D' { $deleted++  }
+            }
+        }
+        elseif ($line.StartsWith('2 ')) { $renamed++ }
+        elseif ($line.StartsWith('u ')) { $conflicted++ }
+        elseif ($line.StartsWith('? ')) { $untracked++ }
     }
-    if ($LASTEXITCODE -ne 0 -or -not $branch) { return "" }
-    return Colorize $BLUE "$ICON_BRANCH $branch"
+    if ($branch -eq '(detached)') { $branch = $oid.Substring(0, 7) }
+    if (-not $branch) { return "" }
+
+    # Stash count from reflog file (no git call). Misses linked-worktree stashes.
+    $stashLog = Join-Path $cwd '.git/logs/refs/stash'
+    $stashed = if (Test-Path -LiteralPath $stashLog) {
+        @(Get-Content -LiteralPath $stashLog).Count
+    } else { 0 }
+
+    $s = ""
+    if     ($ahead -gt 0 -and $behind -gt 0) { $s += "↕ ↑$ahead ↓$behind " }
+    elseif ($ahead  -gt 0)                   { $s += "↑$ahead " }
+    elseif ($behind -gt 0)                   { $s += "↓$behind " }
+    if ($conflicted -gt 0) { $s += "✖$conflicted " }
+    if ($stashed    -gt 0) { $s += "`$$stashed " }
+    if ($staged     -gt 0) { $s += "+$staged " }
+    if ($renamed    -gt 0) { $s += "»$renamed " }
+    if ($deleted    -gt 0) { $s += "-$deleted " }
+    if ($modified   -gt 0) { $s += "!$modified " }
+    if ($untracked  -gt 0) { $s += "?$untracked " }
+
+    $status = if ($s) { " [" + $s.TrimEnd() + "]" } else { "" }
+    return Colorize $BLUE "$ICON_BRANCH $branch$status"
 }
 
 ## Main: parse JSON once, render segments in order, join with spaces
