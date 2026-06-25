@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Shared helpers for the setup steps. Source this file; do not execute it.
+# Functions are kept in alphabetical order.
 
 # Put Homebrew on PATH for the current shell. The installer does not touch the
 # running session, so steps that need `brew` call this first. Covers Apple
@@ -30,29 +31,10 @@ ensure_nvm() {
   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 }
 
-# Download a zipped macOS app and install it into /Applications, unless it is
-# already there. Apps installed this way keep their own built-in updater (no
-# Homebrew, nothing external tracking the install). Args:
-#   $1 - app name as it appears in /Applications, without the ".app" suffix
-#   $2 - URL serving a .zip that contains the .app bundle
-install_app_zip() {
-  local name="$1" url="$2"
-  local app="/Applications/$name.app"
-  if [ -d "$app" ]; then
-    return
-  fi
-
-  echo "Downloading $name..."
-  local tmp
-  tmp="$(mktemp -d)"
-  curl -fsSL "$url" -o "$tmp/app.zip"
-  ditto -x -k "$tmp/app.zip" /Applications
-  rm -rf "$tmp"
-}
-
-# Like install_app_zip, but for apps shipped as a .dmg disk image: mount the
-# image on a private mountpoint, copy the .app out into /Applications, then
-# unmount. Skipped if the app is already installed. Args:
+# Download a macOS app shipped as a .dmg disk image and install it into
+# /Applications, unless it is already there: mount the image on a private
+# mountpoint, copy the .app out, then unmount. Apps installed this way keep their
+# own built-in updater (no Homebrew, nothing external tracking the install). Args:
 #   $1 - app name as it appears in /Applications, without the ".app" suffix
 #        (must match the .app bundle name inside the disk image)
 #   $2 - URL serving a .dmg that contains the .app bundle
@@ -74,10 +56,44 @@ install_app_dmg() {
   rm -rf "$tmp" "$mnt"
 }
 
-# Print a reminder to install an app by hand, unless it is already in
-# /Applications. Used for apps whose only download sits behind a bot challenge:
-# rather than working around that protection, just point the user at the page.
+# Like install_app_dmg, but for apps shipped as a .zip holding the .app bundle at
+# the zip root: extract straight into /Applications, unless already installed.
 # Args:
+#   $1 - app name as it appears in /Applications, without the ".app" suffix
+#   $2 - URL serving a .zip that contains the .app bundle
+install_app_zip() {
+  local name="$1" url="$2"
+  local app="/Applications/$name.app"
+  if [ -d "$app" ]; then
+    return
+  fi
+
+  echo "Downloading $name..."
+  local tmp
+  tmp="$(mktemp -d)"
+  curl -fsSL "$url" -o "$tmp/app.zip"
+  ditto -x -k "$tmp/app.zip" /Applications
+  rm -rf "$tmp"
+}
+
+# Install a Mac App Store app by id, unless it is already installed. Requires
+# being signed in to the App Store with the app in your purchase history; mas can
+# no longer sign in from the CLI. Args:
+#   $1 - numeric App Store id
+#   $2 - human-readable name, for the status messages
+mas_install() {
+  local id="$1" name="$2"
+  if mas list | grep -q "^$id"; then
+    echo "$name already installed."
+  elif ! mas install "$id"; then
+    echo "Could not install $name. Sign in to the App Store, then run: mas install $id" >&2
+  fi
+}
+
+# Print a reminder to install an app by hand, unless it is already in
+# /Applications. Used for anything we do not auto-install: downloads behind a bot
+# challenge, paid apps we do not script, or apps with an ambiguous source. Just
+# points the user at the download page. Args:
 #   $1 - app name as it appears in /Applications, without the ".app" suffix
 #   $2 - URL the user should open to download it
 warn_manual_install() {

@@ -1,14 +1,27 @@
 #!/usr/bin/env bash
-# Apps whose only download sits behind a bot challenge (e.g. Cloudflare). We do
-# not work around that, so this just prints a reminder to install each by hand
-# if it is missing. Apps with a clean direct download live in apps.sh.
+# Apps we do not auto-install: downloads behind a bot challenge (e.g. Cloudflare)
+# that we will not work around, plus paid or ambiguous apps not worth scripting.
+# Just prints a reminder to install each by hand if it is missing. Apps with a
+# clean direct download live in apps.sh. Entries are ABC-ordered.
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$DIR/lib.sh"
+
+# Araxis Merge. Paid diff/merge tool; no "latest" URL and no self-updater, so not
+# worth scripting. 30-day trial on the site.
+warn_manual_install "Araxis Merge" "https://www.araxis.com/merge/"
+
+# Aseprite. Paid pixel art editor with no free direct download (the page redirects
+# to checkout). Buy from the site, Steam, or itch.io.
+warn_manual_install "Aseprite" "https://www.aseprite.org/"
 
 # Claude desktop app.
 warn_manual_install "Claude" "https://claude.ai/download"
 
 # Codex app.
 warn_manual_install "Codex" "https://chatgpt.com/codex"
+
+# CrossOver. Paid (14-day trial, then needs a license). The download is clean and
+# self-updates, so move it to apps.sh if you want it auto-installed.
+warn_manual_install "CrossOver" "https://www.codeweavers.com/crossover/download"
