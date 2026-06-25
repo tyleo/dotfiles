@@ -7,7 +7,6 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 steps=(
   homebrew.sh
-  packages.sh
   cargo.sh
   vscode.sh
   node.sh

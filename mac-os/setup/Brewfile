@@ -1,4 +1,4 @@
-# Homebrew formulae & casks. Installed by packages.sh.
+# Homebrew formulae & casks. Installed by homebrew.sh.
 # VS Code extensions and cargo crates live in their own step scripts, not here.
 # Regenerate these lines with: brew bundle dump --force --file=mac-os/setup/Brewfile
 
