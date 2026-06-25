@@ -121,7 +121,7 @@ format_git() {
     local cwd="$1"
     [ -z "$cwd" ] && return
     local porcelain
-    porcelain=$(git -C "$cwd" -c core.fsmonitor= status --porcelain=v2 --branch 2>/dev/null) || return
+    porcelain=$(git -C "$cwd" -c core.fsmonitor= --no-optional-locks status --porcelain=v2 --branch 2>/dev/null) || return
     local branch="" oid=""
     local ahead=0 behind=0 conflicted=0 staged=0 renamed=0 deleted=0 modified=0 untracked=0
     while IFS= read -r line; do

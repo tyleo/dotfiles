@@ -114,7 +114,7 @@ function Format-Directory($cwd) {
 function Format-Git($cwd) {
     if (-not $cwd) { return "" }
     $ErrorActionPreference = 'SilentlyContinue'
-    $porcelain = & git -C "$cwd" -c core.fsmonitor= status --porcelain=v2 --branch 2>$null
+    $porcelain = & git -C "$cwd" -c core.fsmonitor= --no-optional-locks status --porcelain=v2 --branch 2>$null
     $ErrorActionPreference = 'Continue'
     if ($LASTEXITCODE -ne 0) { return "" }
 
