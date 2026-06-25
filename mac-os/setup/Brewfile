@@ -1,0 +1,57 @@
+# Homebrew formulae & casks. Installed by packages.sh.
+# VS Code extensions and cargo crates live in their own step scripts, not here.
+# Regenerate these lines with: brew bundle dump --force --file=mac-os/setup/Brewfile
+
+# Secure runtime for JavaScript and TypeScript
+brew "deno"
+# Play, record, convert, and stream select audio and video codecs
+brew "ffmpeg"
+# Command-line fuzzy finder written in Go
+brew "fzf"
+# Image format providing lossless and lossy compression for web images
+brew "webp"
+# GitHub command-line tool
+brew "gh"
+# Distributed revision control system
+brew "git"
+# Quickly rewrite git repository history
+brew "git-filter-repo"
+# Git extension for versioning large files
+brew "git-lfs"
+# Graph visualization software from AT&T and Bell Labs
+brew "graphviz"
+# Website copier/offline browser
+brew "httrack"
+# Tools and libraries to manipulate images in select formats
+brew "imagemagick"
+# Lightweight and flexible command-line JSON processor
+brew "jq"
+# Create, run, and share large language models (LLMs)
+brew "ollama"
+# Draw UML diagrams
+brew "plantuml"
+# PDF rendering library (based on the xpdf-3.0 code base)
+brew "poppler"
+# Command-line shell and scripting language
+brew "powershell"
+# Search tool like grep and The Silver Searcher
+brew "ripgrep"
+# Cross-shell prompt for astronauts
+brew "starship"
+# Terminal image and video viewer
+brew "timg"
+# Web Assembly Binary Toolkit
+brew "wabt"
+# Utilities to create and convert Web Open Font File (WOFF) files
+brew "woff2"
+# Feature-rich command-line audio/video downloader
+brew "yt-dlp"
+# UNIX shell (command interpreter)
+brew "zsh"
+
+# Monospaced font with programming ligatures + Nerd Font glyphs
+cask "font-fira-code-nerd-font"
+# Cross-platform Git credential storage for multiple hosting providers
+cask "git-credential-manager"
+# Keyboard layout for programmers
+cask "programmer-dvorak"
