@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 # Install Mac App Store apps with mas. Requires being signed in to the App Store
 # first (mas can no longer sign in from the CLI), and each app must already be in
-# your purchase history. mas itself is installed by homebrew.sh (brew "mas").
+# your purchase history. mas itself is installed by this script.
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$DIR/lib.sh"
 
 ensure_brew
+# Mac App Store command-line interface
+brew install mas
 if ! command -v mas &>/dev/null; then
-  echo "ERROR: 'mas' not found; it is installed by homebrew.sh (brew \"mas\")." >&2
+  echo "ERROR: 'mas' could not be installed via Homebrew." >&2
   exit 1
 fi
 
