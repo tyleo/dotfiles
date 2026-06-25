@@ -17,6 +17,3 @@ ensure_nvm
 if ! command -v node &>/dev/null; then
   nvm install --lts
 fi
-
-# Set up the Corepack shims (yarn, pnpm).
-corepack enable

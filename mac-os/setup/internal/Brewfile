@@ -49,8 +49,6 @@ brew "webp"
 brew "woff2"
 # Feature-rich command-line audio/video downloader
 brew "yt-dlp"
-# UNIX shell (command interpreter)
-brew "zsh"
 
 # Monospaced font with programming ligatures + Nerd Font glyphs
 cask "font-fira-code-nerd-font"
