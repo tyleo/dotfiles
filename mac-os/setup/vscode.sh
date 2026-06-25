@@ -1,12 +1,23 @@
 #!/usr/bin/env bash
-# Install VS Code extensions. Requires the `code` CLI on PATH (in VS Code:
-# Cmd-Shift-P -> "Shell Command: Install 'code' command in PATH").
+# Install VS Code and the extensions below. VS Code is downloaded straight from
+# Microsoft into /Applications so it owns its own updates (no Homebrew).
 set -euo pipefail
 
-if ! command -v code &>/dev/null; then
-  echo "WARNING: 'code' CLI not found — skipping VS Code extensions."
-  echo "         Install VS Code + its shell command, then re-run this script."
-  exit 0
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$DIR/lib.sh"
+
+install_app_zip "Visual Studio Code" \
+  "https://update.code.visualstudio.com/latest/darwin-universal/stable"
+
+# Use the `code` CLI from PATH if present, otherwise the one in the app bundle.
+BUNDLED_CODE="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
+if command -v code &>/dev/null; then
+  code="$(command -v code)"
+elif [ -x "$BUNDLED_CODE" ]; then
+  code="$BUNDLED_CODE"
+else
+  echo "ERROR: 'code' CLI not found after install — aborting." >&2
+  exit 1
 fi
 
 vscode_extensions=(
@@ -36,5 +47,5 @@ vscode_extensions=(
 )
 
 for ext in "${vscode_extensions[@]}"; do
-  code --install-extension "$ext" --force
+  "$code" --install-extension "$ext" --force
 done
