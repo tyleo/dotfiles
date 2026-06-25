@@ -49,3 +49,41 @@ install_app_zip() {
   ditto -x -k "$tmp/app.zip" /Applications
   rm -rf "$tmp"
 }
+
+# Like install_app_zip, but for apps shipped as a .dmg disk image: mount the
+# image on a private mountpoint, copy the .app out into /Applications, then
+# unmount. Skipped if the app is already installed. Args:
+#   $1 - app name as it appears in /Applications, without the ".app" suffix
+#        (must match the .app bundle name inside the disk image)
+#   $2 - URL serving a .dmg that contains the .app bundle
+install_app_dmg() {
+  local name="$1" url="$2"
+  local app="/Applications/$name.app"
+  if [ -d "$app" ]; then
+    return
+  fi
+
+  echo "Downloading $name..."
+  local tmp mnt
+  tmp="$(mktemp -d)"
+  mnt="$(mktemp -d)"
+  curl -fsSL "$url" -o "$tmp/app.dmg"
+  hdiutil attach -nobrowse -quiet -mountpoint "$mnt" "$tmp/app.dmg"
+  cp -R "$mnt/$name.app" /Applications/
+  hdiutil detach -quiet "$mnt"
+  rm -rf "$tmp" "$mnt"
+}
+
+# Print a reminder to install an app by hand, unless it is already in
+# /Applications. Used for apps whose only download sits behind a bot challenge:
+# rather than working around that protection, just point the user at the page.
+# Args:
+#   $1 - app name as it appears in /Applications, without the ".app" suffix
+#   $2 - URL the user should open to download it
+warn_manual_install() {
+  local name="$1" url="$2"
+  if [ -d "/Applications/$name.app" ]; then
+    return
+  fi
+  echo "Manual install needed: $name is not in /Applications. Download it from $url"
+}

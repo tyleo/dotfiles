@@ -1,5 +1,6 @@
 # Homebrew formulae & casks. Installed by homebrew.sh.
-# VS Code extensions and cargo crates live in their own step scripts, not here.
+# VS Code extensions, cargo crates, direct-download apps, and Mac App Store apps
+# live in their own step scripts, not here.
 # Regenerate these lines with: brew bundle dump --force --file=mac-os/setup/internal/Brewfile
 
 # Secure runtime for JavaScript and TypeScript
@@ -8,8 +9,6 @@ brew "deno"
 brew "ffmpeg"
 # Command-line fuzzy finder written in Go
 brew "fzf"
-# Image format providing lossless and lossy compression for web images
-brew "webp"
 # GitHub command-line tool
 brew "gh"
 # Distributed revision control system
@@ -26,6 +25,8 @@ brew "httrack"
 brew "imagemagick"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
+# Mac App Store command-line interface
+brew "mas"
 # Create, run, and share large language models (LLMs)
 brew "ollama"
 # Draw UML diagrams
@@ -42,6 +43,8 @@ brew "starship"
 brew "timg"
 # Web Assembly Binary Toolkit
 brew "wabt"
+# Image format providing lossless and lossy compression for web images
+brew "webp"
 # Utilities to create and convert Web Open Font File (WOFF) files
 brew "woff2"
 # Feature-rich command-line audio/video downloader
@@ -53,5 +56,7 @@ brew "zsh"
 cask "font-fira-code-nerd-font"
 # Cross-platform Git credential storage for multiple hosting providers
 cask "git-credential-manager"
+# Free and open-source painting and sketching program
+cask "krita"
 # Keyboard layout for programmers
 cask "programmer-dvorak"

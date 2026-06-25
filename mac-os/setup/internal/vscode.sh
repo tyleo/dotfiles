@@ -16,7 +16,7 @@ if command -v code &>/dev/null; then
 elif [ -x "$BUNDLED_CODE" ]; then
   code="$BUNDLED_CODE"
 else
-  echo "ERROR: 'code' CLI not found after install — aborting." >&2
+  echo "ERROR: 'code' CLI not found after install, aborting." >&2
   exit 1
 fi
 
