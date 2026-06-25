@@ -21,3 +21,11 @@ ensure_cargo() {
     . "$HOME/.cargo/env"
   fi
 }
+
+# Load nvm into the current shell. The installer only edits shell rc files, so
+# steps that need `nvm`/`node` in the running session must source it first.
+ensure_nvm() {
+  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+  # shellcheck disable=SC1091
+  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+}
