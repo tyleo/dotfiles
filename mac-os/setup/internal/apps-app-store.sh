@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Install Mac App Store apps with mas. Requires being signed in to the App Store
-# first (mas can no longer sign in from the CLI), and each app must already be in
-# your purchase history. mas itself is installed by this script.
+# first, and each app must already be in your purchase history. mas itself is
+# installed by this script.
 #
-# Each row is a "<name>" line followed by its <app-store-id> line. app_store_apps
-# holds those pairs and install_rows installs each. Entries are ABC-ordered by name.
+# Each row is a "<name>" line followed by its <app-store-id> line.
+# app_store_apps holds those pairs and install_rows installs each. Entries are
+# ABC-ordered by name.
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -3,6 +3,7 @@
     "type": "command",
     "command": "~/.claude/file-suggestion.sh"
   },
+  "model": "opus[1m]",
   "statusLine": {
     "type": "command",
     "command": "sh ~/.claude/statusline.sh"
@@ -10,5 +11,7 @@
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": true
   },
-  "effortLevel": "xhigh"
+  "effortLevel": "xhigh",
+  "tui": "fullscreen",
+  "skipAutoPermissionPrompt": true
 }

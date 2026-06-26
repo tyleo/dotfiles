@@ -35,7 +35,8 @@ mac-os/setup/internal/homebrew.sh # just sync the Brewfile
 
 ## What it installs
 
-Steps run in alphabetical order; they are independent, so order does not matter.
+`homebrew.sh` runs first and `dotfiles.sh` last; the steps in between are
+independent and alphabetical.
 
 | Step                | Installs                                                                        |
 | ------------------- | ------------------------------------------------------------------------------- |
@@ -45,6 +46,7 @@ Steps run in alphabetical order; they are independent, so order does not matter.
 | `apps-manual.sh`    | Prints reminders for apps it will not auto-install (bot-gated, paid, ambiguous) |
 | `cargo.sh`          | Rust toolchain (rustup) plus the listed cargo crates                            |
 | `cli.sh`            | Self-updating vendor CLIs over curl (Claude Code, Oh My Zsh, yt-dlp)            |
+| `dotfiles.sh`       | Copies the tracked dotfiles into `$HOME` (shell rc, git, VS Code, Ghostty, ...) |
 | `homebrew.sh`       | Everything in the `Brewfile` (CLIs, casks, fonts)                               |
 | `node.sh`           | nvm + an LTS Node, with Corepack enabled                                        |
 | `pkg.sh`            | CLI tools from a vendor's signed `.pkg` (PowerShell)                            |
@@ -68,6 +70,8 @@ Each list lives in its own step script, kept in alphabetical order:
   the tool's command, pinned version, and `.pkg` URL.
 - **cargo crate** - add it to `cargo_crates` in `cargo.sh`.
 - **VS Code extension** - add it to `vscode_extensions` in `vscode.sh`.
+- **Dotfile** - add a `"<source>"` / `"<destination>"` pair to `dotfiles` in
+  `dotfiles.sh`.
 
 Shared helpers (`ensure_brew`, `install_app_dmg`, `install_app_zip`,
-`install_each`, `install_pairs`, `install_pkg`, ...) live in `internal/lib.sh`.
+`install_dotfile`, `install_pkg`, `install_rows`, ...) live in `internal/lib.sh`.
