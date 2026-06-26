@@ -16,6 +16,7 @@ steps=(
   cli.sh
   homebrew.sh
   node.sh
+  pkg.sh
   vscode.sh
 )
 

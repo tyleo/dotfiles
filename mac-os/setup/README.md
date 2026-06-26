@@ -47,6 +47,7 @@ Steps run in alphabetical order; they are independent, so order does not matter.
 | `cli.sh`            | Vendor curl-installed CLIs (Claude Code, Oh My Zsh)                             |
 | `homebrew.sh`       | Everything in the `Brewfile` (CLIs, casks, fonts)                               |
 | `node.sh`           | nvm + an LTS Node, with Corepack enabled                                        |
+| `pkg.sh`            | CLI tools from a vendor's signed `.pkg` (PowerShell)                            |
 | `vscode.sh`         | The listed VS Code extensions                                                   |
 
 Directly-downloaded apps (`apps-dmg.sh` / `apps-zip.sh`) own their own updates;
@@ -63,8 +64,10 @@ Each list lives in its own step script, kept in alphabetical order:
   `apps-app-store.sh`.
 - **App with no clean download** - add a `"<name>"` / `"<url>"` pair to
   `apps-manual.sh` so a reminder is printed.
+- **CLI tool from a signed `.pkg`** - add an `install_pkg` call to `pkg.sh` with
+  the tool's command, pinned version, and `.pkg` URL.
 - **cargo crate** - add it to `cargo_crates` in `cargo.sh`.
 - **VS Code extension** - add it to `vscode_extensions` in `vscode.sh`.
 
 Shared helpers (`ensure_brew`, `install_app_dmg`, `install_app_zip`,
-`install_each`, `install_pairs`, ...) live in `internal/lib.sh`.
+`install_each`, `install_pairs`, `install_pkg`, ...) live in `internal/lib.sh`.

@@ -123,6 +123,30 @@ install_pairs() {
   done
 }
 
+# Install a command-line tool from a vendor's signed .pkg, unless that exact
+# version is already on PATH. Microsoft signs and notarizes the PowerShell pkg, so
+# `installer` runs it with no Gatekeeper bypass (no -allowUntrusted). These tools
+# do not self-update, so the version passed here is the source of truth: bump it and
+# the URL together and the next run upgrades in place (installer replaces the files).
+# Args:
+#   $1 - display name, for the status messages
+#   $2 - command the package installs; "$cmd --version" is matched against $3
+#   $3 - version string expected in "$cmd --version" output; skipped if it matches
+#   $4 - URL serving the .pkg
+install_pkg() {
+  local name="$1" cmd="$2" version="$3" url="$4"
+  if command -v "$cmd" &>/dev/null && "$cmd" --version 2>/dev/null | grep -qF "$version"; then
+    return
+  fi
+
+  echo "Installing $name $version..."
+  local tmp
+  tmp="$(mktemp -d)"
+  curl -fsSL "$url" -o "$tmp/pkg.pkg"
+  sudo installer -pkg "$tmp/pkg.pkg" -target /
+  rm -rf "$tmp"
+}
+
 # Install a Mac App Store app by id, unless it is already installed. Requires
 # being signed in to the App Store with the app in your purchase history; mas can
 # no longer sign in from the CLI. Args:

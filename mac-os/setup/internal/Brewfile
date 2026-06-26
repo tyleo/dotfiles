@@ -31,8 +31,6 @@ brew "ollama"
 brew "plantuml"
 # PDF rendering library (based on the xpdf-3.0 code base)
 brew "poppler"
-# Command-line shell and scripting language
-brew "powershell"
 # Search tool like grep and The Silver Searcher
 brew "ripgrep"
 # Cross-shell prompt for astronauts
