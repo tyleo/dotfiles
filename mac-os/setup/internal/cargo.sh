@@ -10,7 +10,7 @@ if ! command -v cargo &>/dev/null; then
 fi
 ensure_cargo
 
-# Install one crate. The functor for the install_each loop below.
+# Install one crate. The functor for the install_rows loop below.
 install_crate() { cargo install "$1"; }
 
 cargo_crates=(
@@ -20,4 +20,4 @@ cargo_crates=(
   wasm-bindgen-cli
 )
 
-install_each install_crate "${cargo_crates[@]}"
+install_rows 1 install_crate "${cargo_crates[@]}"

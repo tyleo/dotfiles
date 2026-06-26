@@ -4,7 +4,7 @@
 # your purchase history. mas itself is installed by this script.
 #
 # Each row is a "<name>" line followed by its <app-store-id> line. app_store_apps
-# holds those pairs and install_pairs installs each. Entries are ABC-ordered by name.
+# holds those pairs and install_rows installs each. Entries are ABC-ordered by name.
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -79,4 +79,4 @@ app_store_apps=(
   497799835
 )
 
-install_pairs mas_install "${app_store_apps[@]}"
+install_rows 2 mas_install "${app_store_apps[@]}"

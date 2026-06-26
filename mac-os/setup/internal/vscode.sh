@@ -20,7 +20,7 @@ else
   exit 1
 fi
 
-# Install one extension. The functor for the install_each loop below.
+# Install one extension. The functor for the install_rows loop below.
 install_extension() { "$code" --install-extension "$1" --force; }
 
 vscode_extensions=(
@@ -49,4 +49,4 @@ vscode_extensions=(
   zxh404.vscode-proto3
 )
 
-install_each install_extension "${vscode_extensions[@]}"
+install_rows 1 install_extension "${vscode_extensions[@]}"

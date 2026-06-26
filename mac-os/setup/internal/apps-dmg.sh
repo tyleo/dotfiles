@@ -5,7 +5,7 @@
 # install at all (bot-gated, paid, ambiguous) live in apps-manual.sh.
 #
 # Each row is a "<name>" line followed by its "<url>" line. dmg_apps holds those
-# pairs and install_pairs installs each. Entries are ABC-ordered by name.
+# pairs and install_rows installs each. Entries are ABC-ordered by name.
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -77,4 +77,4 @@ dmg_apps=(
   "https://get.videolan.org/vlc/last/macosx/vlc-3.0.23-arm64.dmg"
 )
 
-install_pairs install_app_dmg "${dmg_apps[@]}"
+install_rows 2 install_app_dmg "${dmg_apps[@]}"

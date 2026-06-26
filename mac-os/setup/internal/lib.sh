@@ -88,23 +88,6 @@ install_app_zip() {
   rm -rf "$tmp"
 }
 
-# Call an installer once per item of a flat list (one argument per call). The
-# width-1 shortcut for install_rows: use it for single-field lists - crates,
-# extensions - where there is nothing to pair up. Args:
-#   $1   - name of the installer function to call per item
-#   $2.. - the items
-install_each() {
-  install_rows 1 "$@"
-}
-
-# Call an installer once per (a, b) pair of a flat list (a1 b1 a2 b2 ...). The
-# width-2 shortcut for install_rows. Args:
-#   $1   - name of the installer function to call per pair
-#   $2.. - the flat list, two elements per row (a1 b1 a2 b2 ...)
-install_pairs() {
-  install_rows 2 "$@"
-}
-
 # Install a command-line tool from a vendor's signed .pkg, unless that exact
 # version is already on PATH. Microsoft signs and notarizes the PowerShell pkg, so
 # `installer` runs it with no Gatekeeper bypass (no -allowUntrusted). These tools

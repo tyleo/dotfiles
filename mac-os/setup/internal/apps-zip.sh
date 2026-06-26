@@ -5,7 +5,7 @@
 # install at all (bot-gated, paid, ambiguous) live in apps-manual.sh.
 #
 # Each row is a "<name>" line followed by its "<url>" line. zip_apps holds those
-# pairs and install_pairs installs each. Entries are ABC-ordered by name.
+# pairs and install_rows installs each. Entries are ABC-ordered by name.
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -33,4 +33,4 @@ zip_apps=(
   "https://download.binarynights.com/ForkLift/ForkLift4.zip"
 )
 
-install_pairs install_app_zip "${zip_apps[@]}"
+install_rows 2 install_app_zip "${zip_apps[@]}"

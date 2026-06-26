@@ -5,7 +5,7 @@
 # clean direct download live in apps-dmg.sh / apps-zip.sh.
 #
 # Each row is a "<name>" line followed by its "<url>" line. manual_apps holds those
-# pairs and install_pairs handles each. Entries are ABC-ordered by name.
+# pairs and install_rows handles each. Entries are ABC-ordered by name.
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -36,4 +36,4 @@ manual_apps=(
   "https://www.codeweavers.com/crossover/download"
 )
 
-install_pairs warn_manual_install "${manual_apps[@]}"
+install_rows 2 warn_manual_install "${manual_apps[@]}"
