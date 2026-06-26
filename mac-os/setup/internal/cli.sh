@@ -25,7 +25,7 @@ fi
 # user-writable (so "yt-dlp -U" needs no sudo) and already on PATH, where it shadows
 # any leftover brew copy. The "latest" URL grabs the newest release at install time;
 # from then on the "--update" line in the yt-dlp config (kept as a dotfile at
-# mac-os/yt-dlp/config, deployed to ~/.config/yt-dlp/config) self-updates it to the
+# mac-os/.config/yt-dlp/config, deployed to ~/.config/yt-dlp/config) self-updates it to the
 # latest stable on every run. Needs ffmpeg (in the Brewfile) to merge audio/video.
 if [ ! -x "$HOME/.local/bin/yt-dlp" ]; then
   mkdir -p "$HOME/.local/bin"
