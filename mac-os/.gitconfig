@@ -178,8 +178,6 @@
 [credential "https://github.com"]
     username = tyleo
 
-# Difftools
-
 [diff]
     tool = araxis
 
@@ -194,8 +192,6 @@
     required = true
     clean = git-lfs clean -- %f
     smudge = git-lfs smudge -- %f
-
-# Mergetools
 
 [merge]
     tool = araxis
