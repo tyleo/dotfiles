@@ -1,19 +1,20 @@
 #!/usr/bin/env bash
 # Full new-Mac setup. Runs each step below in order; every step is also safe to
 # run on its own (e.g. `internal/vscode.sh` to just refresh extensions). Steps are
-# ABC-ordered; the only cross-step dependency (mas.sh needs brew from homebrew.sh)
-# is already satisfied since "homebrew" sorts before "mas".
+# ABC-ordered and independent: anything that needs Homebrew calls ensure_brew,
+# which installs it on demand, so no run order between steps is required.
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 steps=(
-  apps.sh
+  apps-app-store.sh
+  apps-dmg.sh
+  apps-manual.sh
+  apps-zip.sh
   cargo.sh
   cli.sh
   homebrew.sh
-  manual-apps.sh
-  mas.sh
   node.sh
   vscode.sh
 )

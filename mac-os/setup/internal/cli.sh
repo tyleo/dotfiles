@@ -4,7 +4,7 @@
 set -euo pipefail
 
 # Claude Code - Anthropic's CLI (not the Claude desktop app, which is in
-# manual-apps.sh). Native installer; needs a Claude subscription or API credits.
+# apps-manual.sh). Native installer; needs a Claude subscription or API credits.
 if ! command -v claude &>/dev/null; then
   curl -fsSL https://claude.ai/install.sh | bash
 fi

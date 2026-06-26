@@ -20,6 +20,9 @@ else
   exit 1
 fi
 
+# Install one extension. The functor for the install_each loop below.
+install_extension() { "$code" --install-extension "$1" --force; }
+
 vscode_extensions=(
   anthropic.claude-code
   dbaeumer.vscode-eslint
@@ -46,6 +49,4 @@ vscode_extensions=(
   zxh404.vscode-proto3
 )
 
-for ext in "${vscode_extensions[@]}"; do
-  "$code" --install-extension "$ext" --force
-done
+install_each install_extension "${vscode_extensions[@]}"

@@ -1,14 +1,10 @@
 #!/usr/bin/env bash
-# Install Homebrew (if missing) and everything in the Brewfile (CLIs, casks,
-# fonts).
+# Install everything in the Brewfile (CLIs, casks, fonts). Homebrew itself is
+# installed on demand by ensure_brew, so this step does not bootstrap it.
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$DIR/lib.sh"
-
-if ! command -v brew &>/dev/null; then
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-fi
 
 ensure_brew
 brew bundle --file="$DIR/Brewfile"

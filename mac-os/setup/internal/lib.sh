@@ -2,12 +2,16 @@
 # Shared helpers for the setup steps. Source this file; do not execute it.
 # Functions are kept in alphabetical order.
 
-# Put Homebrew on PATH for the current shell. The installer does not touch the
-# running session, so steps that need `brew` call this first. Covers Apple
-# Silicon (/opt/homebrew) and Intel (/usr/local).
+# Put Homebrew on PATH for the current shell, installing it first if it is missing.
+# The installer does not touch the running session, so any step that needs `brew`
+# calls this and gets a working brew no matter what order the steps run in. Covers
+# Apple Silicon (/opt/homebrew) and Intel (/usr/local).
 ensure_brew() {
   if command -v brew &>/dev/null; then
     return
+  fi
+  if [ ! -x /opt/homebrew/bin/brew ] && [ ! -x /usr/local/bin/brew ]; then
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   fi
   if [ -x /opt/homebrew/bin/brew ]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
@@ -56,9 +60,10 @@ install_app_dmg() {
   rm -rf "$tmp" "$mnt"
 }
 
-# Like install_app_dmg, but for apps shipped as a .zip holding the .app bundle at
-# the zip root: extract straight into /Applications, unless already installed.
-# Args:
+# Like install_app_dmg, but for apps shipped as a .zip. Extracts the zip and
+# copies "<name>.app" into /Applications, whether the bundle sits at the zip root
+# or one folder down (some zips wrap it in a folder). Skips the download if the
+# app is already installed. Args:
 #   $1 - app name as it appears in /Applications, without the ".app" suffix
 #   $2 - URL serving a .zip that contains the .app bundle
 install_app_zip() {
@@ -69,20 +74,62 @@ install_app_zip() {
   fi
 
   echo "Downloading $name..."
-  local tmp
+  local tmp found
   tmp="$(mktemp -d)"
   curl -fsSL "$url" -o "$tmp/app.zip"
-  ditto -x -k "$tmp/app.zip" /Applications
+  ditto -x -k "$tmp/app.zip" "$tmp/unpacked"
+  found="$(find "$tmp/unpacked" -maxdepth 2 -type d -name "$name.app" -print -quit)"
+  if [ -z "$found" ]; then
+    echo "ERROR: $name.app not found in zip from $url" >&2
+    rm -rf "$tmp"
+    return 1
+  fi
+  cp -R "$found" /Applications/
   rm -rf "$tmp"
+}
+
+# Call an installer once per item of a flat list (one argument per call). Use this
+# for single-field lists - crates, extensions - where there is nothing to pair up.
+# Args:
+#   $1   - name of the installer function to call per item
+#   $2.. - the items
+install_each() {
+  local fn="$1"
+  shift
+  local item
+  for item in "$@"; do
+    "$fn" "$item"
+  done
+}
+
+# Call an installer once per (a, b) pair of a flat list. The list alternates the
+# two fields of each row - a1 b1 a2 b2 ... - and install_pairs feeds them to the
+# installer two at a time. Keep each row's two fields together (a comment above,
+# one field per line) so a row reads as one unit; an odd element count means a
+# field was dropped, which is reported up front instead of silently shifting every
+# later pair. Args:
+#   $1   - name of the installer function to call per pair
+#   $2.. - the flat list, two elements per row (a1 b1 a2 b2 ...)
+install_pairs() {
+  local fn="$1"
+  shift
+  if (($# % 2)); then
+    echo "install_pairs: $fn list has an odd element count; each row needs 2" >&2
+    return 1
+  fi
+  while (($#)); do
+    "$fn" "$1" "$2"
+    shift 2
+  done
 }
 
 # Install a Mac App Store app by id, unless it is already installed. Requires
 # being signed in to the App Store with the app in your purchase history; mas can
 # no longer sign in from the CLI. Args:
-#   $1 - numeric App Store id
-#   $2 - human-readable name, for the status messages
+#   $1 - human-readable name, for the status messages
+#   $2 - numeric App Store id
 mas_install() {
-  local id="$1" name="$2"
+  local name="$1" id="$2"
   if mas list | grep -q "^$id"; then
     echo "$name already installed."
   elif ! mas install "$id"; then
