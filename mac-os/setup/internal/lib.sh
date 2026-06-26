@@ -169,6 +169,30 @@ install_rows() {
   done
 }
 
+# Symlink a binary that lives inside an installed `.app` into `~/.local/bin`,
+# which is already on PATH, so its short name runs from anywhere. Skips the link
+# when it already points at the right target and refreshes a stale one. Warns
+# and moves on when the source binary is missing, so an app that is not
+# installed yet does not fail the run.
+#
+# Args:
+# $1 - command name to create under `~/.local/bin`
+# $2 - path to the binary inside `/Applications`
+link_app_bin() {
+  local name="$1" src="$2"
+  local dest="$HOME/.local/bin/$name"
+  if [ ! -x "$src" ]; then
+    echo "Skipping $name: source binary missing: $src" >&2
+    return
+  fi
+  if [ "$(readlink "$dest")" = "$src" ]; then
+    return
+  fi
+  mkdir -p "$HOME/.local/bin"
+  ln -sf "$src" "$dest"
+  echo "Linked $name -> $src"
+}
+
 # Install a Mac App Store app by id, unless it is already installed. Requires
 # being signed in to the App Store with the app in your purchase history; `mas`
 # can no longer sign in from the CLI.

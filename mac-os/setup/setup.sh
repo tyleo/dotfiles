@@ -4,10 +4,11 @@
 # run on its own (e.g. `internal/vscode.sh` to just refresh extensions).
 #
 # `homebrew.sh` is listed first, to install that foundation plus every
-# `Brewfile` package once up front. `dotfiles.sh` is listed last, so it lays the
-# managed shell rc files down over whatever the tool installers appended to
-# them. `zsh-plugins.sh` clones the Oh My Zsh custom plugins, so it leans on
-# `cli.sh`'s Oh My Zsh install.
+# `Brewfile` package once up front. `dotfiles.sh` runs after the tool
+# installers, so it lays the managed shell rc files down over whatever they
+# appended to them. `bin-links.sh` runs last, linking app CLIs into
+# `~/.local/bin` once those apps are in `/Applications`. `zsh-plugins.sh` clones
+# the Oh My Zsh custom plugins, so it leans on `cli.sh`'s Oh My Zsh install.
 
 set -euo pipefail
 
@@ -26,6 +27,7 @@ steps=(
   vscode.sh
   zsh-plugins.sh
   dotfiles.sh
+  bin-links.sh
 )
 
 for step in "${steps[@]}"; do
