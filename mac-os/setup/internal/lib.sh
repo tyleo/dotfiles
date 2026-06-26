@@ -88,39 +88,21 @@ install_app_zip() {
   rm -rf "$tmp"
 }
 
-# Call an installer once per item of a flat list (one argument per call). Use this
-# for single-field lists - crates, extensions - where there is nothing to pair up.
-# Args:
+# Call an installer once per item of a flat list (one argument per call). The
+# width-1 shortcut for install_rows: use it for single-field lists - crates,
+# extensions - where there is nothing to pair up. Args:
 #   $1   - name of the installer function to call per item
 #   $2.. - the items
 install_each() {
-  local fn="$1"
-  shift
-  local item
-  for item in "$@"; do
-    "$fn" "$item"
-  done
+  install_rows 1 "$@"
 }
 
-# Call an installer once per (a, b) pair of a flat list. The list alternates the
-# two fields of each row - a1 b1 a2 b2 ... - and install_pairs feeds them to the
-# installer two at a time. Keep each row's two fields together (a comment above,
-# one field per line) so a row reads as one unit; an odd element count means a
-# field was dropped, which is reported up front instead of silently shifting every
-# later pair. Args:
+# Call an installer once per (a, b) pair of a flat list (a1 b1 a2 b2 ...). The
+# width-2 shortcut for install_rows. Args:
 #   $1   - name of the installer function to call per pair
 #   $2.. - the flat list, two elements per row (a1 b1 a2 b2 ...)
 install_pairs() {
-  local fn="$1"
-  shift
-  if (($# % 2)); then
-    echo "install_pairs: $fn list has an odd element count; each row needs 2" >&2
-    return 1
-  fi
-  while (($#)); do
-    "$fn" "$1" "$2"
-    shift 2
-  done
+  install_rows 2 "$@"
 }
 
 # Install a command-line tool from a vendor's signed .pkg, unless that exact
@@ -145,6 +127,29 @@ install_pkg() {
   curl -fsSL "$url" -o "$tmp/pkg.pkg"
   sudo installer -pkg "$tmp/pkg.pkg" -target /
   rm -rf "$tmp"
+}
+
+# Call an installer once per row of a flat list, passing each row's fields as
+# arguments. bash has no nested arrays, so rows are stored flat - the fields of
+# each row laid end to end (r1f1 r1f2 ... r2f1 r2f2 ...) - and install_rows slices
+# them back into one call per row. Keep a row's fields together in the source (a
+# comment above, one field per line) so each row reads as one unit. A leftover
+# count that is not a whole number of rows means a field was dropped, reported up
+# front instead of silently shifting every later row. Args:
+#   $1   - fields per row (the arity the installer expects)
+#   $2   - name of the installer function to call per row
+#   $3.. - the flat list, $1 elements per row
+install_rows() {
+  local width="$1" fn="$2"
+  shift 2
+  if (($# % width)); then
+    echo "install_rows: $fn list has $# elements, not a whole number of $width-field rows" >&2
+    return 1
+  fi
+  while (($#)); do
+    "$fn" "${@:1:width}"
+    shift "$width"
+  done
 }
 
 # Install a Mac App Store app by id, unless it is already installed. Requires
