@@ -24,6 +24,12 @@ items=(
   "Google Chrome"
   "https://dl.google.com/chrome/mac/universal/stable/GGRO/googlechrome.dmg"
 
+  "Luna Display"
+  "https://downloads.astropad.com/luna/mac/latest"
+
+  "Luna Secondary"
+  "https://downloads.astropad.com/luna-secondary/mac/latest"
+
   "Obsidian"
   "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.12.7/Obsidian-1.12.7.dmg"
 
