@@ -116,6 +116,7 @@ alias open='open -a ForkLift'
 
 # Setup Directories
 
+hash -d applications=~/applications
 hash -d documents=~/documents
 hash -d downloads=~/downloads
 hash -d git=~/git
@@ -164,21 +165,25 @@ restore_dock_animation_speed() {
   killall Dock
 }
 
+# Make ForkLift the default app for opening folders.
 set_file_viewer_to_forklift() {
   defaults write -g NSFileViewer -string com.binarynights.ForkLift
   defaults write com.apple.LaunchServices/com.apple.launchservices.secure LSHandlers -array-add '{LSHandlerContentType="public.folder";LSHandlerRoleAll="com.binarynights.ForkLift";}'
 }
 
+# Restore Finder as the default app for opening folders.
 restore_file_viewer() {
   defaults write com.apple.LaunchServices/com.apple.launchservices.secure LSHandlers -array-add '{LSHandlerContentType="public.folder";LSHandlerRoleAll="com.apple.finder";}'
   defaults delete -g NSFileViewer
 }
 
+# Restart the display and brightness services to fix monitor glitches.
 reload_monitors() {
   sudo killall -HUP corebrightnessd
   sudo killall -HUP WindowServer
 }
 
+# Reload ~/.zshrc into the current shell.
 reload_zshrc() {
   source ~/.zshrc
   echo "✅ Reloaded ~/.zshrc"
@@ -221,7 +226,7 @@ ext_to_webp() {
 #   -f <fps>     Optional frames per second (default: 12)
 #
 # Examples:
-#   # Full video → GIF
+#   # Full video to GIF
 #   gifify input.mp4 output.gif
 #
 #   # Clip from 3s to 7s
@@ -356,6 +361,7 @@ mp4ify() {
 
 ## httrack
 
+# Mirror the website at url into out_dir, staying within that URL.
 download_webpage() {
   local url="$1"
   local out_dir="$2"
@@ -375,6 +381,7 @@ download_webpage() {
 
 ## pdfimages
 
+# Extract every embedded image from pdf_file, naming each with out_prefix.
 extract_pdf_images() {
   local pdf_file="$1"
   local out_prefix="$2"
@@ -389,6 +396,7 @@ extract_pdf_images() {
 
 ## safari
 
+# Open the Safari iCloud tabs database to clear stuck tabs.
 edit_safari_tabs_db() {
   # https://manualdousuario.net/en/how-to-remove-stuck-icloud-tabs-in-safari/
   sqlite3 ~/Library/Containers/com.apple.Safari/Data/Library/Safari/CloudTabs.db
@@ -396,12 +404,14 @@ edit_safari_tabs_db() {
 
 ## yt-dlp
 
+# Download the best video and audio streams for url, merged into an mkv.
 download_max_quality_yt_video() {
   yt-dlp -f "bv*+ba" --merge-output-format mkv "$1"
 }
 
 ## Voxel Max
 
+# Rename input to output, pack it with tyt, and commit it as release version.
 vmax-release() {
   local input="$1" output="$2" version="$3"
 
