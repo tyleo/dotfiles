@@ -1,7 +1,6 @@
 // Place your settings in this file to overwrite the default settings
 {
-  "[markdown]": {
-    "editor.tabSize": 2,
+  "[css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
 
@@ -13,7 +12,8 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
 
-  "[css]": {
+  "[markdown]": {
+    "editor.tabSize": 2,
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
 
