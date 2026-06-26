@@ -1,42 +1,3 @@
-[core]
-	autocrlf = input
-    commentChar = @
-    # This makes the pager work properly on mac
-    pager = "less -F -R -X"
-
-# Difftools
-
-[diff]
-    tool = araxis
-
-[difftool "araxis"]
-    path = /Applications/Araxis Merge.app/Contents/Utilities/compare
-
-[difftool "smerge"]
-    cmd = smerge mergetool "$BASE" "$LOCAL" "$REMOTE"
-    trustExitCode = true
-
-[difftool "vscode"]
-    cmd = code --wait --diff $LOCAL $REMOTE
-
-# Mergetools
-
-[merge]
-    tool = araxis
-
-[mergetool]
-    keepBackup = false
-
-[mergetool "araxis"]
-    path = /Applications/Araxis Merge.app/Contents/Utilities/compare
-
-[mergetool "smerge"]
-    cmd = smerge mergetool $BASE $LOCAL $REMOTE -o $MERGED
-    trustExitCode = true
-
-[mergetool "vscode"]
-    cmd = code --wait $MERGED
-
 [alias]
     # Simple aliases
     cg = config --global
@@ -204,12 +165,29 @@
     # Prints whether the commit is live or not.
     is-live = "! git merge-base --is-ancestor $1 origin/releases/live; if [[ -z $? ]]; then echo 'The commit is not live.'; else echo 'The commit is live.'; fi; :"
 
-[rerere]
-    enabled = true
+[core]
+	autocrlf = input
+    commentChar = @
+    # This makes the pager work properly on mac
+    pager = "less -F -R -X"
 
-[user]
-    name = tyleo
-    email = git@tyleo.com
+[credential]
+    helper = 
+    helper = /usr/local/share/gcm-core/git-credential-manager
+
+[credential "https://github.com"]
+    username = tyleo
+
+# Difftools
+
+[diff]
+    tool = araxis
+
+[difftool "araxis"]
+    path = /Applications/Araxis Merge.app/Contents/Utilities/compare
+
+[difftool "vscode"]
+    cmd = code --wait --diff $LOCAL $REMOTE
 
 [filter "lfs"]
     process = git-lfs filter-process
@@ -217,12 +195,26 @@
     clean = git-lfs clean -- %f
     smudge = git-lfs smudge -- %f
 
+# Mergetools
+
+[merge]
+    tool = araxis
+
+[mergetool]
+    keepBackup = false
+
+[mergetool "araxis"]
+    path = /Applications/Araxis Merge.app/Contents/Utilities/compare
+
+[mergetool "vscode"]
+    cmd = code --wait $MERGED
+
 [pull]
     rebase = true
-[credential "https://github.com"]
-	username = tyleo
-[credential]
-	helper = 
-	helper = /usr/local/share/gcm-core/git-credential-manager
-[credential "https://dev.azure.com"]
-	useHttpPath = true
+
+[rerere]
+    enabled = true
+
+[user]
+    name = tyleo
+    email = git@tyleo.com

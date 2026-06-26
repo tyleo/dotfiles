@@ -1,17 +1,14 @@
 #!/usr/bin/env bash
-# Install GUI apps shipped as a .dmg, straight into /Applications so they own
-# their own updates (no Homebrew). Zip-based apps live in apps-zip.sh; apps that
-# need a pkg installer or do not self-update live in the Brewfile; apps we do
-# not auto-install at all (bot-gated, paid, ambiguous) live in apps-manual.sh.
-#
-# Each row is a "<name>" line followed by its "<url>" line. dmg_apps holds those
-# pairs and install_rows installs each. Entries are ABC-ordered by name.
+
+# Install GUI apps shipped as a `.dmg`, straight into `/Applications` so they
+# own their own updates.
+
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$DIR/lib.sh"
 
-dmg_apps=(
+items=(
   "ChatGPT"
   "https://persistent.oaistatic.com/sidekick/public/ChatGPT_Desktop_public_latest.dmg"
 
@@ -52,4 +49,4 @@ dmg_apps=(
   "https://get.videolan.org/vlc/last/macosx/vlc-3.0.23-arm64.dmg"
 )
 
-install_rows 2 install_app_dmg "${dmg_apps[@]}"
+install_rows 2 install_app_dmg "${items[@]}"

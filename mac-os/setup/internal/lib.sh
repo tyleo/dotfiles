@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
+
 # Shared helpers for the setup steps. Source this file; do not execute it.
 # Functions are kept in alphabetical order.
 
 # Put Homebrew on PATH for the current shell, installing it first if it is
 # missing. The installer does not touch the running session, so any step that
-# needs `brew` calls this and gets a working brew no matter what order the steps
-# run in. Covers Apple Silicon (/opt/homebrew) and Intel (/usr/local).
+# needs `brew` calls this and gets a working `brew` no matter what order the
+# steps run in.
 ensure_brew() {
   if command -v brew &>/dev/null; then
     return
@@ -20,14 +21,14 @@ ensure_brew() {
   fi
 }
 
-# Put cargo on PATH if rustup installed it into ~/.cargo.
+# Put `cargo` on PATH if `rustup` installed it into `~/.cargo`.
 ensure_cargo() {
   if ! command -v cargo &>/dev/null && [ -f "$HOME/.cargo/env" ]; then
     . "$HOME/.cargo/env"
   fi
 }
 
-# Load nvm into the current shell. The installer only edits shell rc files, so
+# Load `nvm` into the current shell. The installer only edits shell rc files, so
 # steps that need `nvm`/`node` in the running session must source it first.
 ensure_nvm() {
   export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
@@ -35,14 +36,15 @@ ensure_nvm() {
   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 }
 
-# Download a macOS app shipped as a .dmg disk image and install it into
-# /Applications, unless it is already there: mount the image on a private
-# mountpoint, copy the .app out, then unmount. Apps installed this way keep
+# Download a macOS app shipped as a `.dmg` disk image and install it into
+# `/Applications`, unless it is already there: mount the image on a private
+# mountpoint, copy the `.app` out, then unmount. Apps installed this way keep
 # their own built-in updater (no Homebrew, nothing external tracking the
-# install). Args:
-#   $1 - app name as it appears in /Applications, without the ".app" suffix
-#        (must match the .app bundle name inside the disk image)
-#   $2 - URL serving a .dmg that contains the .app bundle
+# install).
+#
+# Args:
+# $1 - app name as it appears in `/Applications`, without the `.app` suffix
+# $2 - URL serving a `.dmg` that contains the `.app` bundle
 install_app_dmg() {
   local name="$1" url="$2"
   local app="/Applications/$name.app"
@@ -61,12 +63,14 @@ install_app_dmg() {
   rm -rf "$tmp" "$mnt"
 }
 
-# Like install_app_dmg, but for apps shipped as a .zip. Extracts the zip and
-# copies "<name>.app" into /Applications, whether the bundle sits at the zip
-# root or one folder down (some zips wrap it in a folder). Skips the download if
-# the app is already installed. Args:
-#   $1 - app name as it appears in /Applications, without the ".app" suffix
-#   $2 - URL serving a .zip that contains the .app bundle
+# Like `install_app_dmg`, but for apps shipped as a `.zip`. Extracts the zip
+# and copies `<name>.app` into `/Applications`, whether the bundle sits at
+# the zip root or one folder down. Skips the download if the app is already
+# installed.
+#
+# Args:
+# $1 - app name as it appears in `/Applications`, without the `.app` suffix
+# $2 - URL serving a `.zip` that contains the `.app` bundle
 install_app_zip() {
   local name="$1" url="$2"
   local app="/Applications/$name.app"
@@ -89,14 +93,15 @@ install_app_zip() {
   rm -rf "$tmp"
 }
 
-# Copy a tracked dotfile from the repo to its place under $HOME, creating any
+# Copy a tracked dotfile from the repo to its place under `$HOME`, creating any
 # missing parent directories. The repo is the source of truth, so this
 # overwrites the live file - but it skips the copy when the two already match
-# (so re-runs are quiet and idempotent) and backs up any differing live file to
-# "<dest>.bak" first, so a stray local edit that was never synced back is not
-# lost. Args:
-#   $1 - path to the dotfile inside the repo
-#   $2 - path it deploys to (typically under $HOME)
+# and backs up any differing live file to `<dest>.bak` first, so a stray local
+# edit that was never synced back is not lost.
+#
+# Args:
+# $1 - path to the dotfile inside the repo
+# $2 - path it deploys to
 install_dotfile() {
   local src="$1" dest="$2"
   if [ ! -f "$src" ]; then
@@ -115,18 +120,17 @@ install_dotfile() {
   echo "Installed $dest"
 }
 
-# Install a command-line tool from a vendor's signed .pkg, unless that exact
-# version is already on PATH. Microsoft signs and notarizes the PowerShell pkg,
-# so `installer` runs it with no Gatekeeper bypass (no -allowUntrusted). These
-# tools do not self-update, so the version passed here is the source of truth:
-# bump it and the URL together and the next run upgrades in place (installer
-# replaces the files).
+# Install a command-line tool from a vendor's signed `.pkg`, unless that exact
+# version is already on PATH. These tools do not self-update, so the version
+# passed here is the source of truth: bump it and the URL together and the next
+# run upgrades in place.
+#
 # Args:
-#   $1 - display name, for the status messages
-#   $2 - command the package installs; "$cmd --version" is matched against $3
-#   $3 - version string expected in "$cmd --version" output; skipped if it
-#        matches
-#   $4 - URL serving the .pkg
+# $1 - display name, for the status messages
+# $2 - command the package installs; `"$cmd --version"` is matched against `$3`
+# $3 - version string expected in `"$cmd --version"` output; skipped if it
+#      matches
+# $4 - URL serving the `.pkg`
 install_pkg() {
   local name="$1" cmd="$2" version="$3" url="$4"
   if command -v "$cmd" &>/dev/null && "$cmd" --version 2>/dev/null | grep -qF "$version"; then
@@ -143,14 +147,15 @@ install_pkg() {
 
 # Call an installer once per row of a flat list, passing each row's fields as
 # arguments. bash has no nested arrays, so rows are stored flat - the fields of
-# each row laid end to end (r1f1 r1f2 ... r2f1 r2f2 ...) - and install_rows
-# slices them back into one call per row. Keep a row's fields together in the
-# source (a comment above, one field per line) so each row reads as one unit. A
-# leftover count that is not a whole number of rows means a field was dropped,
-# reported up front instead of silently shifting every later row. Args:
-#   $1   - fields per row (the arity the installer expects)
-#   $2   - name of the installer function to call per row
-#   $3.. - the flat list, $1 elements per row
+# each row laid end to end (r1f1 r1f2 ... r2f1 r2f2 ...) - and `install_rows`
+# slices them back into one call per row. A leftover count that is not a whole
+# number of rows means a field was dropped, reported up front instead of
+# silently shifting every later row.
+#
+# Args:
+# $1   - fields per row
+# $2   - name of the installer function to call per row
+# $3.. - the flat list, `$1` elements per row
 install_rows() {
   local width="$1" fn="$2"
   shift 2
@@ -165,10 +170,12 @@ install_rows() {
 }
 
 # Install a Mac App Store app by id, unless it is already installed. Requires
-# being signed in to the App Store with the app in your purchase history; mas
-# can no longer sign in from the CLI. Args:
-#   $1 - human-readable name, for the status messages
-#   $2 - numeric App Store id
+# being signed in to the App Store with the app in your purchase history; `mas`
+# can no longer sign in from the CLI.
+#
+# Args:
+# $1 - human-readable name, for the status messages
+# $2 - numeric App Store id
 mas_install() {
   local name="$1" id="$2"
   if mas list | grep -q "^$id"; then
@@ -179,11 +186,13 @@ mas_install() {
 }
 
 # Print a reminder to install an app by hand, unless it is already in
-# /Applications. Used for anything we do not auto-install: downloads behind a
+# `/Applications`. Used for anything we do not auto-install: downloads behind a
 # bot challenge, paid apps we do not script, or apps with an ambiguous source.
-# Just points the user at the download page. Args:
-#   $1 - app name as it appears in /Applications, without the ".app" suffix
-#   $2 - URL the user should open to download it
+# Just points the user at the download page.
+#
+# Args:
+# $1 - app name as it appears in `/Applications`, without the `.app` suffix
+# $2 - URL the user should open to download it
 warn_manual_install() {
   local name="$1" url="$2"
   if [ -d "/Applications/$name.app" ]; then

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Install VS Code and the extensions below. VS Code is downloaded straight from
-# Microsoft into /Applications so it owns its own updates (no Homebrew).
+
+# Install VS Code and the extensions below.
+
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -16,14 +17,13 @@ if command -v code &>/dev/null; then
 elif [ -x "$BUNDLED_CODE" ]; then
   code="$BUNDLED_CODE"
 else
-  echo "ERROR: 'code' CLI not found after install, aborting." >&2
+  echo "ERROR: \`code\` CLI not found after install, aborting." >&2
   exit 1
 fi
 
-# Install one extension. The functor for the install_rows loop below.
 install_extension() { "$code" --install-extension "$1" --force; }
 
-vscode_extensions=(
+items=(
   anthropic.claude-code
 
   dbaeumer.vscode-eslint
@@ -71,4 +71,4 @@ vscode_extensions=(
   zxh404.vscode-proto3
 )
 
-install_rows 1 install_extension "${vscode_extensions[@]}"
+install_rows 1 install_extension "${items[@]}"

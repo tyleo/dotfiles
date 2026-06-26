@@ -1,25 +1,24 @@
 #!/usr/bin/env bash
-# Install Mac App Store apps with mas. Requires being signed in to the App Store
-# first, and each app must already be in your purchase history. mas itself is
-# installed by this script.
-#
-# Each row is a "<name>" line followed by its <app-store-id> line.
-# app_store_apps holds those pairs and install_rows installs each. Entries are
-# ABC-ordered by name.
+
+# Install Mac App Store apps with `mas`. Requires being signed in to the App
+# Store first, and each app must already be in your purchase history. `mas`
+# itself is installed by this script.
+
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$DIR/lib.sh"
 
 ensure_brew
-# Mac App Store command-line interface
+
 brew install mas
+
 if ! command -v mas &>/dev/null; then
-  echo "ERROR: 'mas' could not be installed via Homebrew." >&2
+  echo "ERROR: \`mas\` could not be installed via Homebrew." >&2
   exit 1
 fi
 
-app_store_apps=(
+items=(
   "1Password for Safari"
   1569813296
 
@@ -66,4 +65,4 @@ app_store_apps=(
   497799835
 )
 
-install_rows 2 mas_install "${app_store_apps[@]}"
+install_rows 2 mas_install "${items[@]}"

@@ -1,8 +1,6 @@
 # macOS setup
 
-Provisions a new Mac: GUI apps, command-line tools, language toolchains, and
-editor config. Everything is idempotent, so it is safe to re-run any time to pick
-up newly added tools.
+Provisions a new Mac: GUI apps, command-line tools, language toolchains, and editor config. Everything is idempotent, so it is safe to re-run any time to pick up newly added tools.
 
 ## Run it
 
@@ -10,23 +8,17 @@ up newly added tools.
 mac-os/setup/setup.sh
 ```
 
-`setup.sh` runs every step in `internal/` in order. You do not need to install
-anything first - Homebrew and each language toolchain are bootstrapped on demand.
+`setup.sh` runs every step in `internal/` in order. You do not need to install anything first.
 
 ### Before you run
 
-- **Sign in to the Mac App Store** (App menu, or System Settings). `mas` can no
-  longer sign in from the CLI, and each App Store app must already be in your
-  purchase history, or its install is skipped.
-- Expect **password prompts** (Homebrew, some installers) and a long first run -
-  Xcode alone is a ~10GB+ download.
-- When it finishes, **restart your terminal** so the new shell config and PATH
-  entries take effect.
+- **Sign in to the Mac App Store** (App menu, or System Settings). `mas` can no longer sign in from the CLI, and each App Store app must already be in your purchase history, or its install is skipped.
+- Expect **password prompts** and a long first run.
+- When it finishes, **restart your terminal** so the new shell config and PATH entries take effect.
 
 ### Run a single step
 
-Every step is self-contained and safe to run on its own - handy for refreshing
-just one thing without redoing the whole setup:
+Every step is self-contained and safe to run on its own - handy for refreshing just one thing without redoing the whole setup:
 
 ```sh
 mac-os/setup/internal/vscode.sh   # just refresh VS Code extensions
@@ -35,8 +27,7 @@ mac-os/setup/internal/homebrew.sh # just sync the Brewfile
 
 ## What it installs
 
-`homebrew.sh` runs first and `dotfiles.sh` last; the steps in between are
-independent and alphabetical.
+`homebrew.sh` runs first and `dotfiles.sh` last; the steps in between are independent and alphabetical.
 
 | Step                | Installs                                                                        |
 | ------------------- | ------------------------------------------------------------------------------- |
@@ -52,26 +43,4 @@ independent and alphabetical.
 | `pkg.sh`            | CLI tools from a vendor's signed `.pkg` (PowerShell)                            |
 | `vscode.sh`         | The listed VS Code extensions                                                   |
 
-Directly-downloaded apps (`apps-dmg.sh` / `apps-zip.sh`) own their own updates;
-`apps-manual.sh` only nudges you - nothing is installed for those.
-
-## Adding tools
-
-Each list lives in its own step script, kept in alphabetical order:
-
-- **Homebrew formula / cask / font** - add a line to `internal/Brewfile`.
-- **Direct-download app** - add a `"<name>"` / `"<url>"` pair to `apps-dmg.sh` or
-  `apps-zip.sh` (whichever format it ships as).
-- **Mac App Store app** - add a `"<name>"` / `"<app-store-id>"` pair to
-  `apps-app-store.sh`.
-- **App with no clean download** - add a `"<name>"` / `"<url>"` pair to
-  `apps-manual.sh` so a reminder is printed.
-- **CLI tool from a signed `.pkg`** - add an `install_pkg` call to `pkg.sh` with
-  the tool's command, pinned version, and `.pkg` URL.
-- **cargo crate** - add it to `cargo_crates` in `cargo.sh`.
-- **VS Code extension** - add it to `vscode_extensions` in `vscode.sh`.
-- **Dotfile** - add a `"<source>"` / `"<destination>"` pair to `dotfiles` in
-  `dotfiles.sh`.
-
-Shared helpers (`ensure_brew`, `install_app_dmg`, `install_app_zip`,
-`install_dotfile`, `install_pkg`, `install_rows`, ...) live in `internal/lib.sh`.
+Directly-downloaded apps (`apps-dmg.sh` / `apps-zip.sh`) own their own updates; `apps-manual.sh` only nudges you - nothing is installed for those.
