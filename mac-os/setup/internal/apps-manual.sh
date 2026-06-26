@@ -24,6 +24,9 @@ items=(
 
   "Microsoft 365"
   "https://go.microsoft.com/fwlink/?linkid=525133"
+
+  "Steam"
+  "https://store.steampowered.com/about/"
 )
 
 install_rows 2 warn_manual_install "${items[@]}"

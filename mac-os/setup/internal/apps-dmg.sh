@@ -36,9 +36,6 @@ items=(
   "Spotify"
   "https://download.scdn.co/SpotifyARM64.dmg"
 
-  "Steam"
-  "https://cdn.cloudflare.steamstatic.com/client/installer/steam.dmg"
-
   "Unity Hub"
   "https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup-arm64.dmg"
 
