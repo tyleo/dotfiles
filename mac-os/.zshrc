@@ -110,68 +110,106 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-# Starship
-eval "$(starship init zsh)"
-
-# FZF
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
-# Path
-export PATH="$HOME/.local/bin:$PATH"
-export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
-export PATH="/Applications/Blender.app/Contents/MacOS:$PATH"
-
-# Variables
-gitconfig=~/.gitconfig
-gitdir=~/git
-downloads=~/downloads
-misc=~/misc
-rrnotes=$gitdir/recroom-notes
-scratch=~/scratch
-starshiptoml=~/.config/starship.toml
-vimrc=~/.vimrc
-vimdir=~/.vim
-zshrc=~/.zshrc
-
-cdg() {
-  cd ~/git
-}
-
-## os
+# Setup `alias`s
 
 alias open='open -a ForkLift'
 
-edit_safari_tabs_db() {
-  # https://manualdousuario.net/en/how-to-remove-stuck-icloud-tabs-in-safari/
-  sqlite3 ~/Library/Containers/com.apple.Safari/Data/Library/Safari/CloudTabs.db
+# Setup Directories
+
+hash -d documents=~/documents
+hash -d downloads=~/downloads
+hash -d git=~/git
+hash -d misc=~/misc
+hash -d scratch=~/scratch
+
+# Setup `PATH`
+
+export PATH="$HOME/.local/bin:$PATH"
+
+# Setup Tools
+
+## `fzf`
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+## `nvm`
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+## `starship`
+eval "$(starship init zsh)"
+
+# Setup Variables
+gitconfig=~/.gitconfig
+zshrc=~/.zshrc
+
+# Setup Functions
+
+## System Functions
+
+# Make Dock pop up instantly
+set_dock_animation_speed() {
+  local autohide_delay="${1:-0.05}"
+  local autohide_time_modifier="${2:-0.5}"
+
+  defaults write com.apple.dock autohide-delay -float "${autohide_delay}"
+  defaults write com.apple.dock autohide-time-modifier -float "${autohide_time_modifier}"
+  killall Dock
 }
 
+# Restore Dock to default animation
+restore_dock_animation_speed() {
+  defaults delete com.apple.dock autohide-time-modifier
+  defaults delete com.apple.dock autohide-delay
+  killall Dock
+}
+
+set_file_viewer_to_forklift() {
+  defaults write -g NSFileViewer -string com.binarynights.ForkLift
+  defaults write com.apple.LaunchServices/com.apple.launchservices.secure LSHandlers -array-add '{LSHandlerContentType="public.folder";LSHandlerRoleAll="com.binarynights.ForkLift";}'
+}
+
+restore_file_viewer() {
+  defaults write com.apple.LaunchServices/com.apple.launchservices.secure LSHandlers -array-add '{LSHandlerContentType="public.folder";LSHandlerRoleAll="com.apple.finder";}'
+  defaults delete -g NSFileViewer
+}
+
+reload_monitors() {
+  sudo killall -HUP corebrightnessd
+  sudo killall -HUP WindowServer
+}
+
+reload_zshrc() {
+  source ~/.zshrc
+  echo "✅ Reloaded ~/.zshrc"
+}
 
 ## cwebp
 
-file_to_webp() {
-  cwebp "$1" -o "${1%.*}.webp"
-}
-
+# Convert a single image file into WebP format, deleting the original file.
 file_into_webp() {
   file_to_webp "$1"
   rm "$1"
 }
-
+# Convert a single image file into WebP format, keeping the original file.
+file_to_webp() {
+  cwebp "$1" -o "${1%.*}.webp"
+}
+# Convert multiple image files into WebP format, deleting the original files.
+ext_into_webp() {
+  ext_to_webp "$@"
+  rm "$@"
+}
+# Convert multiple image files into WebP format, keeping the original files.
 ext_to_webp() {
   for img in "$@"; do
     cwebp "$img" -o "${img%.*}.webp"
   done
 }
 
-ext_into_webp() {
-  ext_to_webp "$@"
-  rm "$@"
-}
-
 ## ffmpeg
 
-# gifify: Convert a portion of a video into a high-quality GIF.
+# Convert a portion of a video into a high-quality GIF.
 #
 # Usage:
 #   gifify [options] input.mp4 output.gif
@@ -349,171 +387,20 @@ extract_pdf_images() {
   pdfimages -all "$pdf_file" "$out_prefix"
 }
 
+## safari
+
+edit_safari_tabs_db() {
+  # https://manualdousuario.net/en/how-to-remove-stuck-icloud-tabs-in-safari/
+  sqlite3 ~/Library/Containers/com.apple.Safari/Data/Library/Safari/CloudTabs.db
+}
+
 ## yt-dlp
 
 download_max_quality_yt_video() {
   yt-dlp -f "bv*+ba" --merge-output-format mkv "$1"
 }
 
-# Make Dock pop up instantly
-set_dock_animation_speed() {
-  local autohide_delay="$1"
-  local autohide_time_modifier="$2"
-
-  defaults write com.apple.dock autohide-delay -float "${autohide_delay}"
-  defaults write com.apple.dock autohide-time-modifier -float "${autohide_time_modifier}"
-  killall Dock
-}
-
-# Restore Dock to default animation
-restore_dock_animation_speed() {
-  defaults delete com.apple.dock autohide-time-modifier
-  defaults delete com.apple.dock autohide-delay
-  killall Dock
-}
-
-set_file_viewer_to_forklift() {
-  defaults write -g NSFileViewer -string com.binarynights.ForkLift
-  defaults write com.apple.LaunchServices/com.apple.launchservices.secure LSHandlers -array-add '{LSHandlerContentType="public.folder";LSHandlerRoleAll="com.binarynights.ForkLift";}'
-}
-
-restore_file_viewer() {
-  defaults write com.apple.LaunchServices/com.apple.launchservices.secure LSHandlers -array-add '{LSHandlerContentType="public.folder";LSHandlerRoleAll="com.apple.finder";}'
-  defaults delete -g NSFileViewer
-}
-
-reload_monitors() {
-  sudo killall -HUP corebrightnessd
-  sudo killall -HUP WindowServer
-}
-
-reload_zshrc() {
-  source ~/.zshrc
-  echo "✅ Reloaded ~/.zshrc"
-}
-
-wake_desktop() {
-  wakeonlan 4C:D7:17:9E:59:39
-}
-
-# Unity RAM disk helpers
-# RAM disk name: {cwdName}RAM  e.g. /path/MyGame -> /Volumes/MyGameRAM
-
-unity_ram_on() {
-  setopt localoptions err_return pipefail nounset
-
-  local size_gb=${1:-32}   # ✅ Default 32 GB now
-  local base_dir=$PWD
-  local vol_name="$(basename "$base_dir")RAM"
-  local mount_dir="/Volumes/${vol_name}"
-  local -a rel_paths=("Assets" "Dependencies" "Library/ScriptAssemblies" "Library/PackageCache")
-
-  echo "💾 Creating ${size_gb}GB RAM disk at ${mount_dir} ..."
-
-  if [[ -d "$mount_dir" ]]; then
-    echo "ℹ️  RAM disk already mounted at ${mount_dir}; reusing."
-  else
-    local blocks=$(( size_gb * 2097152 ))
-    local device
-    device="$(hdiutil attach -nomount "ram://${blocks}" | awk 'NR==1{print $1}')"
-    [[ -n "$device" ]] || { echo "❌ Failed to allocate RAM device."; return 1 }
-    diskutil erasevolume HFS+ "$vol_name" "$device" >/dev/null
-    [[ -d "$mount_dir" ]] || { echo "❌ Failed to mount RAM disk at ${mount_dir}."; return 1 }
-  fi
-
-  local rp src dst cur
-  for rp in "${rel_paths[@]}"; do
-    src="${base_dir}/${rp}"
-    dst="${mount_dir}/${rp}"
-
-    if [[ -L "$src" ]]; then
-      cur="$(readlink "$src")"
-      if [[ "$cur" == "$dst" ]]; then
-        echo "↔️  ${rp} already linked to RAM; skipping."
-        continue
-      else
-        echo "❌ ${rp} is a symlink to '${cur}', not '${dst}'. Refusing to change it."
-        return 1
-      fi
-    fi
-
-    if [[ -e "$src" ]]; then
-      echo "→ Copying ${rp} ..."
-      mkdir -p "$(dirname "$dst")" "$dst"
-      rsync -a "${src}/" "${dst}/"
-      echo "→ Linking ${rp} → ${dst}"
-      rm -rf "$src"
-      ln -s "$dst" "$src"
-    else
-      echo "🆕 ${rp} missing locally — creating on RAM disk and linking."
-      mkdir -p "$(dirname "$dst")" "$dst"
-      ln -s "$dst" "$src"
-    fi
-  done
-
-  echo "✅ RAM disk ready: ${mount_dir}"
-}
-
-unity_ram_off() {
-  setopt localoptions err_return pipefail nounset
-
-  local base_dir=$PWD
-  local vol_name="$(basename "$base_dir")RAM"
-  local mount_dir="/Volumes/${vol_name}"
-  local -a rel_paths=("Assets" "Dependencies" "Library/ScriptAssemblies" "Library/PackageCache")
-
-  [[ -d "$mount_dir" ]] || { echo "❌ RAM disk not mounted at ${mount_dir}."; return 1 }
-
-  local rp link_path src_on_ram cur
-  for rp in "${rel_paths[@]}"; do
-    link_path="${base_dir}/${rp}"
-    src_on_ram="${mount_dir}/${rp}"
-
-    if [[ -L "$link_path" ]]; then
-      cur="$(readlink "$link_path")"
-      if [[ "$cur" != "$src_on_ram" ]]; then
-        echo "❌ ${rp} link points to '${cur}', not '${src_on_ram}'. Aborting to avoid data loss."
-        return 1
-      fi
-      echo "→ Restoring ${rp} from RAM ..."
-      rm "$link_path"
-      mkdir -p "$link_path"
-      if [[ -d "$src_on_ram" ]]; then
-        rsync -a "${src_on_ram}/" "${link_path}/"
-      else
-        echo "⚠️  Nothing to restore for ${rp}."
-      fi
-    elif [[ -e "$link_path" ]]; then
-      echo "ℹ️  ${rp} is a real directory already; skipping."
-    else
-      if [[ -d "$src_on_ram" ]]; then
-        echo "→ Recreating ${rp} from RAM ..."
-        mkdir -p "$link_path"
-        rsync -a "${src_on_ram}/" "${link_path}/"
-      else
-        echo "⚠️  Skipping ${rp}; not present locally or on RAM."
-      fi
-    fi
-  done
-
-  echo "⏏️  Unmounting ${mount_dir} ..."
-  diskutil unmount "$mount_dir" >/dev/null || { echo "❌ Unmount failed."; return 1; }
-  local device
-  device="$(mount | awk -v m="${mount_dir}" '$0 ~ m {print $1; exit}')"
-  if [[ -n "$device" ]]; then
-    hdiutil detach "$device" >/dev/null || { echo "❌ Detach failed for ${device}."; return 1; }
-  else
-    echo "⚠️  Couldn’t identify device; it may already be detached."
-  fi
-
-  echo "✅ RAM disk ${vol_name} removed."
-}
-
-# nvm
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
+## Voxel Max
 
 vmax-release() {
   local input="$1" output="$2" version="$3"
