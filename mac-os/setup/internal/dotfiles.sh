@@ -56,9 +56,6 @@ dotfiles=(
   "$REPO/shared/vim/.vimrc"
   "$HOME/.vimrc"
 
-  "$REPO/shared/visual_studio_code/keybindings.json"
-  "$VSCODE/keybindings.json"
-
   "$REPO/shared/visual_studio_code/settings.json"
   "$VSCODE/settings.json"
 )
