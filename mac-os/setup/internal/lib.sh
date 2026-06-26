@@ -209,18 +209,48 @@ mas_install() {
   fi
 }
 
-# Print a reminder to install an app by hand, unless it is already in
-# `/Applications`. Used for anything we do not auto-install: downloads behind a
-# bot challenge, paid apps we do not script, or apps with an ambiguous source.
-# Just points the user at the download page.
+# Help install an app we do not fully automate, unless it is already in
+# `/Applications`. If the URL is a direct installer file (.pkg/.dmg/.zip), grab
+# it into ~/Downloads so the user only has to open it; we stop short of running
+# it because the last step (sign-in, license, drag-to-Applications) is manual.
+# If the URL is a landing page or sits behind a bot gate there is no single file
+# to fetch, so we just print the link - we never try to defeat a bot challenge.
 #
 # Args:
 # $1 - app name as it appears in `/Applications`, without the `.app` suffix
-# $2 - URL the user should open to download it
+# $2 - direct installer URL when one exists, otherwise a download page
 warn_manual_install() {
   local name="$1" url="$2"
   if [ -d "/Applications/$name.app" ]; then
     return
   fi
+
+  # Peek with a HEAD so we can tell a real installer from a web page without
+  # pulling the whole page down. A bot gate or unsupported HEAD leaves this
+  # empty, which falls through to the printed reminder below.
+  local info ctype fname dest
+  if info="$(curl -fsIL -o /dev/null -w '%{content_type}\t%{url_effective}' "$url" 2>/dev/null)"; then
+    ctype="${info%%$'\t'*}"
+    fname="${info##*/}"
+    fname="${fname%%\?*}"
+    case "$ctype:$fname" in
+    *html*) ;; # a web page, not a file - fall through to the reminder
+    *.pkg | *.mpkg | *.dmg | *.zip)
+      dest="$HOME/Downloads/$fname"
+      if [ -f "$dest" ]; then
+        echo "$name installer already downloaded at $dest. Open it to finish installing."
+        return
+      fi
+      echo "Downloading $name installer to $dest ..."
+      mkdir -p "$HOME/Downloads"
+      if curl -fL --progress-bar "$url" -o "$dest"; then
+        echo "Downloaded $name. Open $dest to finish installing; sign-in/license is manual."
+        return
+      fi
+      rm -f "$dest"
+      ;;
+    esac
+  fi
+
   echo "Manual install needed: $name is not in /Applications. Download it from $url"
 }
