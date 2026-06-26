@@ -1,5 +1,4 @@
 # yt-dlp configuration. Deployed to ~/.config/yt-dlp/config.
-# Self-update to the latest stable release on each run before downloading. yt-dlp is
-# installed as the standalone binary (mac-os/setup/internal/cli.sh), so "--update"
-# replaces the binary itself in place - no package manager, never stale.
+#
+# Self-update to the latest stable release on each run before downloading.
 --update
