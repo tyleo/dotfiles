@@ -5,6 +5,11 @@ set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$DIR/lib.sh"
 
+# cargo install compiles each crate from source, which needs a C compiler and linker.
+# Those ship with the Xcode Command Line Tools that the Homebrew installer sets up, so
+# make sure that foundation is in place before building (no-op once it exists).
+ensure_brew
+
 if ! command -v cargo &>/dev/null; then
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 fi

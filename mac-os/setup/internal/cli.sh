@@ -6,6 +6,15 @@
 # package manager to catch up. Entries are ABC-ordered by tool name.
 set -euo pipefail
 
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$DIR/lib.sh"
+
+# The Oh My Zsh installer below clones itself with git and aborts ("git is not
+# installed") if git is missing. git ships with the Xcode Command Line Tools that the
+# Homebrew installer sets up, so ensure that foundation is present first (no-op once
+# it exists).
+ensure_brew
+
 # Claude Code - Anthropic's CLI (not the Claude desktop app, which is in
 # apps-manual.sh). Native installer; needs a Claude subscription or API credits.
 if ! command -v claude &>/dev/null; then
