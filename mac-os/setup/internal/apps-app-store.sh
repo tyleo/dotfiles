@@ -37,9 +37,6 @@ items=(
   "Pixquare"
   1659428179
 
-  "Resprite"
-  1662335989
-
   "TestFlight"
   899247664
 

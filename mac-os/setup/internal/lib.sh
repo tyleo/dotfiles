@@ -254,3 +254,20 @@ warn_manual_install() {
 
   echo "Manual install needed: $name is not in /Applications. Download it from $url"
 }
+
+# Remind us to install an app distributed through Steam, unless its Steam
+# library manifest is already present. Steam keeps these in its own library
+# (not `/Applications`) and updates them itself, and the client will not install
+# them without a signed-in session, so this only nudges: it prints a `steam://`
+# link that opens the store page right in the Steam app.
+#
+# Args:
+# $1 - app name, for the reminder
+# $2 - numeric Steam app id
+warn_steam_install() {
+  local name="$1" id="$2"
+  if [ -f "$HOME/Library/Application Support/Steam/steamapps/appmanifest_$id.acf" ]; then
+    return
+  fi
+  echo "Manual install needed: $name is not in your Steam library. Install it from Steam: steam://store/$id (https://store.steampowered.com/app/$id/)"
+}

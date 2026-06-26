@@ -35,6 +35,7 @@ mac-os/setup/internal/homebrew.sh # just sync the Brewfile
 | `apps-dmg.sh`       | GUI apps shipped as `.dmg`, downloaded straight into `/Applications`            |
 | `apps-zip.sh`       | GUI apps shipped as `.zip`, downloaded straight into `/Applications`            |
 | `apps-manual.sh`    | Prints reminders for apps it will not auto-install (bot-gated, paid, ambiguous) |
+| `apps-steam.sh`     | Prints reminders for apps installed through Steam (Aseprite, Resprite)          |
 | `cargo.sh`          | Rust toolchain (rustup) plus the listed cargo crates                            |
 | `cli.sh`            | Self-updating vendor CLIs over curl (Claude Code, Oh My Zsh, yt-dlp)            |
 | `dotfiles.sh`       | Copies the tracked dotfiles into `$HOME` (shell rc, git, VS Code, Ghostty, ...) |
@@ -43,4 +44,4 @@ mac-os/setup/internal/homebrew.sh # just sync the Brewfile
 | `pkg.sh`            | CLI tools from a vendor's signed `.pkg` (PowerShell)                            |
 | `vscode.sh`         | The listed VS Code extensions                                                   |
 
-Directly-downloaded apps (`apps-dmg.sh` / `apps-zip.sh`) own their own updates; `apps-manual.sh` only nudges you - nothing is installed for those.
+Directly-downloaded apps (`apps-dmg.sh` / `apps-zip.sh`) own their own updates; `apps-manual.sh` and `apps-steam.sh` only nudge you - nothing is installed for those.

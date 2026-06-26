@@ -13,9 +13,6 @@ items=(
   "Araxis Merge"
   "https://www.araxis.com/merge/"
 
-  "Aseprite"
-  "https://www.aseprite.org/"
-
   "Claude"
   "https://claude.ai/download"
 

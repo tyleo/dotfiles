@@ -19,6 +19,7 @@ steps=(
   apps-app-store.sh
   apps-dmg.sh
   apps-manual.sh
+  apps-steam.sh
   apps-zip.sh
   cargo.sh
   cli.sh
