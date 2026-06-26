@@ -34,8 +34,6 @@ items=(
 
   fill-labs.dependi
 
-  github.copilot
-
   mechatroner.rainbow-csv
 
   ms-dotnettools.csdevkit
