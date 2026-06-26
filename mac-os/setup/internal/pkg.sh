@@ -15,10 +15,6 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$DIR/lib.sh"
 
 pkgs=(
-  # PowerShell. Apple Silicon build; on Intel swap "osx-arm64" for "osx-x64" in the
-  # URL. GitHub release assets have no "latest" alias, so the version is pinned: bump
-  # it (and the URL) when a newer release ships. Signed + notarized since the May 2026
-  # release, so installer needs no -allowUntrusted.
   "PowerShell"
   "pwsh"
   "7.6.3"

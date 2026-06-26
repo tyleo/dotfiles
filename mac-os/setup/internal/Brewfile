@@ -53,8 +53,6 @@ cask "adguard"
 cask "audacity"
 # 3D creation suite; no self-update, brew handles upgrades
 cask "blender"
-# Monospaced font with programming ligatures + Nerd Font glyphs
-cask "font-fira-code-nerd-font"
 # Cross-platform Git credential storage for multiple hosting providers
 cask "git-credential-manager"
 # Keyboard customizer (pkg installs a DriverKit extension; also adds EventViewer)
@@ -65,3 +63,7 @@ cask "krita"
 cask "programmer-dvorak"
 # Ubiquiti Wi-Fi network analyzer and troubleshooter (pkg + privileged helper)
 cask "wifiman"
+
+cask "font-fira-code"
+cask "font-fira-code-nerd-font"
+cask "font-monaspace"

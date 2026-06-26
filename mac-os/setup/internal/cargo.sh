@@ -15,8 +15,11 @@ install_crate() { cargo install "$1"; }
 
 cargo_crates=(
   cargo-workspaces
+
   tyt
+
   tyt-vmax
+
   wasm-bindgen-cli
 )
 

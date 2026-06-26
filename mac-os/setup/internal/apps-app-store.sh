@@ -19,62 +19,48 @@ if ! command -v mas &>/dev/null; then
 fi
 
 app_store_apps=(
-  # Amazon Kindle. Apple Silicon-native build that self-updates; the legacy direct-
-  # download Kindle is x86-only with no updater.
+  "1Password for Safari"
+  1569813296
+
   "Amazon Kindle"
   302584613
 
-  # Combustion Inc. Companion app for Combustion thermometers (iPad app on Apple
-  # Silicon). "Combustion" is ambiguous - this is the cooking one, not Autodesk.
   "Combustion Inc."
   1658858290
 
-  # GarageBand. Apple's free DAW, Mac App Store only.
   "GarageBand"
   682658836
 
-  # Kirsch Automation. Controls motorized window coverings (iPad app on Apple Silicon).
   "Kirsch Automation"
   1469943618
 
-  # Microsoft Excel. Self-updates via the App Store; needs Microsoft 365 to edit.
   "Microsoft Excel"
   462058435
 
-  # Microsoft OneNote. Fully free, no subscription needed.
   "Microsoft OneNote"
   784801555
 
-  # Microsoft PowerPoint. Self-updates via the App Store; needs Microsoft 365 to edit.
   "Microsoft PowerPoint"
   462062816
 
-  # Microsoft Word. Self-updates via the App Store; needs Microsoft 365 to edit.
   "Microsoft Word"
   462054704
 
-  # Pixquare. Pixel art studio (iPad app on Apple Silicon). Free, has in-app purchases.
   "Pixquare"
   1659428179
 
-  # Resprite. Pixel art studio (iPad app on Apple Silicon). Free, has in-app purchases.
   "Resprite"
   1662335989
 
-  # TestFlight. Apple's beta installer, Mac App Store only.
   "TestFlight"
   899247664
 
-  # UniFi. Ubiquiti network manager (iPad app on Apple Silicon).
   "UniFi"
   1057750338
 
-  # Voxel Max. Paid ($9.99) voxel editor (iPad app on Apple Silicon); must be bought
-  # in the App Store before mas can install it.
   "Voxel Max"
   1442352186
 
-  # Xcode. Apple's IDE; large (~10GB+) download.
   "Xcode"
   497799835
 )
