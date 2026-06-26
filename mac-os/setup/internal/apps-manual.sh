@@ -24,6 +24,9 @@ items=(
 
   "CrossOver"
   "https://www.codeweavers.com/crossover/download"
+
+  "Microsoft 365"
+  "https://go.microsoft.com/fwlink/?linkid=525133"
 )
 
 install_rows 2 warn_manual_install "${items[@]}"

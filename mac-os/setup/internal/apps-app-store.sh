@@ -34,18 +34,6 @@ items=(
   "Kirsch Automation"
   1469943618
 
-  "Microsoft Excel"
-  462058435
-
-  "Microsoft OneNote"
-  784801555
-
-  "Microsoft PowerPoint"
-  462062816
-
-  "Microsoft Word"
-  462054704
-
   "Pixquare"
   1659428179
 
