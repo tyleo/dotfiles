@@ -15,6 +15,11 @@ if ! command -v cargo &>/dev/null; then
 fi
 ensure_cargo
 
+# wasm-bindgen-cli (below) compiles against the wasm32-unknown-unknown target, but a
+# default rustup install only fetches the host's std. Add that target's std so wasm
+# crates can build against it; rustup makes this a no-op once it is present.
+rustup target add wasm32-unknown-unknown
+
 # Install one crate. The functor for the install_rows loop below.
 install_crate() { cargo install "$1"; }
 
