@@ -43,8 +43,9 @@ brew "wabt"
 brew "webp"
 # Utilities to create and convert Web Open Font File (WOFF) files
 brew "woff2"
-# Feature-rich command-line audio/video downloader
-brew "yt-dlp"
+# yt-dlp is NOT here on purpose: the brew formula lags upstream by months and its
+# pip-wheel install blocks "yt-dlp -U". cli.sh installs the self-updating standalone
+# binary instead. ffmpeg above stays - yt-dlp needs it to merge audio/video streams.
 
 # System-wide ad and tracker blocker (privileged pkg installer; self-updates)
 cask "adguard"

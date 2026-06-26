@@ -44,7 +44,7 @@ Steps run in alphabetical order; they are independent, so order does not matter.
 | `apps-zip.sh`       | GUI apps shipped as `.zip`, downloaded straight into `/Applications`            |
 | `apps-manual.sh`    | Prints reminders for apps it will not auto-install (bot-gated, paid, ambiguous) |
 | `cargo.sh`          | Rust toolchain (rustup) plus the listed cargo crates                            |
-| `cli.sh`            | Vendor curl-installed CLIs (Claude Code, Oh My Zsh)                             |
+| `cli.sh`            | Self-updating vendor CLIs over curl (Claude Code, Oh My Zsh, yt-dlp)            |
 | `homebrew.sh`       | Everything in the `Brewfile` (CLIs, casks, fonts)                               |
 | `node.sh`           | nvm + an LTS Node, with Corepack enabled                                        |
 | `pkg.sh`            | CLI tools from a vendor's signed `.pkg` (PowerShell)                            |
