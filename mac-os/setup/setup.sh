@@ -8,13 +8,13 @@ set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 steps=(
+  homebrew.sh
   apps-app-store.sh
   apps-dmg.sh
   apps-manual.sh
   apps-zip.sh
   cargo.sh
   cli.sh
-  homebrew.sh
   node.sh
   pkg.sh
   vscode.sh
