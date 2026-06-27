@@ -28,6 +28,8 @@ items=(
 
   dbaeumer.vscode-eslint
 
+  DrBlury.protobuf-vsc
+
   eamodio.gitlens
 
   esbenp.prettier-vscode
@@ -42,9 +44,23 @@ items=(
 
   ms-dotnettools.vscode-dotnet-runtime
 
+  ms-python.debugpy
+
+  ms-python.python
+
+  ms-python.vscode-pylance
+
+  ms-python.vscode-python-envs
+
+  ms-vscode-remote.remote-ssh
+
+  ms-vscode-remote.remote-ssh-edit
+
   ms-vscode.hexeditor
 
   ms-vscode.powershell
+
+  ms-vscode.remote-explorer
 
   rust-lang.rust-analyzer
 
@@ -62,11 +78,11 @@ items=(
 
   ue.alphabetical-sorter
 
+  VisualStudioToolsForUnity.vstuc
+
   vscode-icons-team.vscode-icons
 
   vscodevim.vim
-  
-  zxh404.vscode-proto3
 )
 
 install_rows 1 install_extension "${items[@]}"
