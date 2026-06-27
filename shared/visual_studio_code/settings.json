@@ -19,6 +19,8 @@
 
   "chat.commandCenter.enabled": false,
 
+  "claudeCode.preferredLocation": "panel",
+
   "cSpell.diagnosticLevel": "Hint",
   "cSpell.userWords": ["tyleo"],
 
@@ -38,7 +40,7 @@
 
   "github.copilot.nextEditSuggestions.enabled": true,
 
-  "javascript.updateImportsOnFileMove.enabled": "always",
+  "js/ts.updateImportsOnFileMove.enabled": "always",
 
   "markdown-preview-enhanced.previewTheme": "atom-light.css",
 
@@ -56,6 +58,7 @@
   "window.restoreWindows": "none",
 
   "workbench.activityBar.location": "hidden",
+  "workbench.colorTheme": "Dark Modern",
   "workbench.editor.empty.hint": "hidden",
   "workbench.iconTheme": "vscode-icons",
   "workbench.layoutControl.enabled": false,
