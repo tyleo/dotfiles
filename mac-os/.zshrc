@@ -189,6 +189,11 @@ reload_zshrc() {
   echo "✅ Reloaded ~/.zshrc"
 }
 
+# Change into the git directory.
+cdg() {
+  cd ~git
+}
+
 ## cwebp
 
 # Convert a single image file into WebP format, deleting the original file.
