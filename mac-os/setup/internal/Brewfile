@@ -56,8 +56,6 @@ cask "karabiner-elements"
 cask "krita"
 # Keyboard layout for programmers
 cask "programmer-dvorak"
-# Ubiquiti Wi-Fi network analyzer and troubleshooter (pkg + privileged helper)
-cask "wifiman"
 
 cask "font-fira-code"
 cask "font-fira-code-nerd-font"
