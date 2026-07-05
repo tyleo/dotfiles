@@ -44,13 +44,13 @@ items=(
   "$REPO/mac-os/usr/.zshrc"
   "$HOME/.zshrc"
 
-  "$REPO/shared/starship/starship.toml"
+  "$REPO/mac-os/usr/.config/starship.toml"
   "$HOME/.config/starship.toml"
 
-  "$REPO/shared/vim/.vimrc"
+  "$REPO/shared/usr/.vimrc"
   "$HOME/.vimrc"
 
-  "$REPO/shared/visual-studio-code/settings.json"
+  "$REPO/shared/apps/visual-studio-code/settings.json"
   "$VSCODE/settings.json"
 )
 
