@@ -14,34 +14,34 @@ REPO="$(git -C "$DIR" rev-parse --show-toplevel)"
 VSCODE="$HOME/Library/Application Support/Code/User"
 
 items=(
-  "$REPO/mac-os/.claude/file-suggestion.sh"
+  "$REPO/mac-os/usr/.claude/file-suggestion.sh"
   "$HOME/.claude/file-suggestion.sh"
 
-  "$REPO/mac-os/.claude/settings.json"
+  "$REPO/mac-os/usr/.claude/settings.json"
   "$HOME/.claude/settings.json"
 
-  "$REPO/mac-os/.claude/statusline.sh"
+  "$REPO/mac-os/usr/.claude/statusline.sh"
   "$HOME/.claude/statusline.sh"
 
-  "$REPO/mac-os/.config/ghostty/config"
+  "$REPO/mac-os/usr/.config/ghostty/config"
   "$HOME/.config/ghostty/config"
 
-  "$REPO/mac-os/.config/karabiner/karabiner.json"
+  "$REPO/mac-os/usr/.config/karabiner/karabiner.json"
   "$HOME/.config/karabiner/karabiner.json"
 
-  "$REPO/mac-os/.config/yt-dlp/config"
+  "$REPO/mac-os/usr/.config/yt-dlp/config"
   "$HOME/.config/yt-dlp/config"
 
-  "$REPO/mac-os/.gitconfig"
+  "$REPO/mac-os/usr/.gitconfig"
   "$HOME/.gitconfig"
 
-  "$REPO/mac-os/.zprofile"
+  "$REPO/mac-os/usr/.zprofile"
   "$HOME/.zprofile"
 
-  "$REPO/mac-os/.zshenv"
+  "$REPO/mac-os/usr/.zshenv"
   "$HOME/.zshenv"
 
-  "$REPO/mac-os/.zshrc"
+  "$REPO/mac-os/usr/.zshrc"
   "$HOME/.zshrc"
 
   "$REPO/shared/starship/starship.toml"
