@@ -50,7 +50,7 @@ items=(
   "$REPO/shared/vim/.vimrc"
   "$HOME/.vimrc"
 
-  "$REPO/shared/visual_studio_code/settings.json"
+  "$REPO/shared/visual-studio-code/settings.json"
   "$VSCODE/settings.json"
 )
 
