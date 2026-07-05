@@ -1,88 +1,36 @@
 #!/usr/bin/env bash
 
-# Install VS Code and the extensions below.
+# Install VS Code, then remind us to import the exported profile. The profile at
+# `apps/visual-studio-code/tyleo.code-profile` carries the settings, keybindings,
+# and extension set together, so importing it is the whole configuration in one
+# step. VS Code has no CLI to import a `.code-profile` (the only `--profile` flag
+# just opens an empty named profile), so the import itself is a manual click and
+# this step only nudges - like `warn_manual_install` for apps we cannot fully
+# automate.
 
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$DIR/lib.sh"
 
-install_app_zip "Visual Studio Code" \
-  "https://update.code.visualstudio.com/latest/darwin-universal/stable"
-
-# Use the `code` CLI from PATH if present, otherwise the one in the app bundle.
-BUNDLED_CODE="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
-if command -v code &>/dev/null; then
-  code="$(command -v code)"
-elif [ -x "$BUNDLED_CODE" ]; then
-  code="$BUNDLED_CODE"
-else
-  echo "ERROR: \`code\` CLI not found after install, aborting." >&2
+PROFILE="$(cd "$DIR/../../apps/visual-studio-code" && pwd)/tyleo.code-profile"
+if [ ! -f "$PROFILE" ]; then
+  echo "ERROR: VS Code profile missing: $PROFILE" >&2
   exit 1
 fi
 
-install_extension() { "$code" --install-extension "$1" --force; }
+install_app_zip "Visual Studio Code" \
+  "https://update.code.visualstudio.com/latest/darwin-universal/stable"
 
-items=(
-  anthropic.claude-code
+# Skip the nudge once a profile of this name exists. VS Code records imported
+# profiles by name in this internal file; a format change here at worst prints
+# the reminder again, which is harmless.
+name="$(basename "$PROFILE" .code-profile)"
+storage="$HOME/Library/Application Support/Code/User/globalStorage/storage.json"
+if [ -f "$storage" ] && grep -Eq "\"name\"[[:space:]]*:[[:space:]]*\"$name\"" "$storage"; then
+  exit 0
+fi
 
-  dbaeumer.vscode-eslint
-
-  DrBlury.protobuf-vsc
-
-  eamodio.gitlens
-
-  esbenp.prettier-vscode
-
-  fill-labs.dependi
-
-  mechatroner.rainbow-csv
-
-  ms-dotnettools.csdevkit
-
-  ms-dotnettools.csharp
-
-  ms-dotnettools.vscode-dotnet-runtime
-
-  ms-python.debugpy
-
-  ms-python.python
-
-  ms-python.vscode-pylance
-
-  ms-python.vscode-python-envs
-
-  ms-vscode-remote.remote-ssh
-
-  ms-vscode-remote.remote-ssh-edit
-
-  ms-vscode.hexeditor
-
-  ms-vscode.powershell
-
-  ms-vscode.remote-explorer
-
-  rust-lang.rust-analyzer
-
-  shd101wyy.markdown-preview-enhanced
-
-  simonsiefke.svg-preview
-
-  slevesque.shader
-
-  soltys.vscode-il
-
-  streetsidesoftware.code-spell-checker
-
-  tamasfe.even-better-toml
-
-  ue.alphabetical-sorter
-
-  VisualStudioToolsForUnity.vstuc
-
-  vscode-icons-team.vscode-icons
-
-  vscodevim.vim
-)
-
-install_rows 1 install_extension "${items[@]}"
+echo "Manual step: the \"$name\" VS Code profile is not imported yet."
+echo "  In VS Code: Profiles (gear, bottom-left) > Import Profile..., then select:"
+echo "  $PROFILE"
