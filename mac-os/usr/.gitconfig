@@ -166,7 +166,7 @@
     is-live = "! git merge-base --is-ancestor $1 origin/releases/live; if [[ -z $? ]]; then echo 'The commit is not live.'; else echo 'The commit is live.'; fi; :"
 
 [core]
-	autocrlf = input
+    autocrlf = input
     commentChar = @
     # This makes the pager work properly on mac
     pager = "less -F -R -X"
