@@ -1,38 +1,16 @@
-[core]
-    autocrlf = true
-    commentChar = @
-
-# Difftools
-
-[diff]
-    tool = araxis
-
-[difftool "araxis"]
-    path = C:\\Program Files\\Araxis\\Araxis Merge\\compare.exe
-
-[difftool "smerge"]
-    cmd = smerge mergetool "$BASE" "$LOCAL" "$REMOTE"
-    trustExitCode = true
-
-[difftool "vscode"]
-    cmd = code --wait --diff $LOCAL $REMOTE
-
-# Mergetools
-
-[merge]
-    tool = araxis
-
-[mergetool "araxis"]
-    path = C:\\Program Files\\Araxis\\Araxis Merge\\compare.exe
-
-[mergetool "smerge"]
-    cmd = smerge mergetool $BASE $LOCAL $REMOTE -o $MERGED
-    trustExitCode = true
-
-[mergetool "vscode"]
-    cmd = code --wait $MERGED
-
 [alias]
+    # Simple aliases
+    cg = config --global
+    cm = checkout master
+    ci = commit
+    com = commit -m
+    co = checkout
+    br = branch
+
+    ri = rebase -i
+    rc = rebase --continue
+    ra = rebase --abort
+
     dno = diff --name-only
     dnop = diff --name-only HEAD~1
     dnom = diff --name-only master
@@ -43,13 +21,14 @@
     dtm = difftool master
     dts = difftool --staged
 
-    # directory difftool
-    # Used like "git ddtp production".
+    # Used like `git ddt production`.
+    # Reads like "directory difftool"
     # Diffs the current branch against another branch, showing the differences in the directory
     # difftool.
     ddt = difftool --dir-diff
-    # directory difftool previous
-    # Used like "git ddtp" or "git ddtp production".
+
+    # Used like `git ddtp` or `git ddtp production`
+    # Reads like "directory difftool previous"
     # Diffs the latest commit in a branch against the previous commit in the branch, showing the
     # differences in the directory difftool.
     # When used without an argument it will show you what the most recent commit on the current
@@ -57,97 +36,179 @@
     # When used with an argument it will show you what the most recent commit on the argument branch
     # contains.
     ddtp = "! git difftool --dir-diff ${1:-HEAD}~1 ${1:-}; :"
-    # directory difftool staged
-    # Used like "git ddts"
-    # Diffs the index against the head. For example, if you have run "git add" but have not yet
+
+    # Used like `git ddts`
+    # Reads like "directory difftool staged"
+    # Diffs the index against the head. For example, if you have run `git add` but have not yet
     # committed, this will show all of the changes that have been added.
     ddts = difftool --dir-diff --staged
 
-    wmerge = merge --no-commit --no-ff
-
-    # ancestor head master
-    ahm = merge-base HEAD master
-    ri = rebase -i
-    rc = rebase --continue
-    ra = rebase --abort
-    # log head master
-    lhm = log HEAD...master
-    lc = log -n 1
-    # log pretty
-    lp = log --stat-name-width=260 --stat-graph-width=20 --stat-width=280 --format="________________________________________________________________________________%n%n'#'' '%B"
-    lpc = log -n 1 --stat --stat-name-width=260 --stat-graph-width=20 --stat-width=280 --format="'#'' '%B"
-    # log pretty head master
-    lphm = log HEAD...master --stat --stat-name-width=260 --stat-graph-width=20 --stat-width=280 --format="________________________________________________________________________________%n%n'#'' '%B"
-
-    # log author
+    # Used like `git lau`
+    # Reads like "log author"
+    # Logs author names only.
     lau = log --format=format:'%an'
-    # log graph
+
+    # Used like `git lga`
+    # Reads like "log graph"
+    # Logs a pretty graph visualization of the current branch.
     lg = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)'
-    # log graph all
+
+    # Used like `git lga`
+    # Reads like "log graph all"
+    # Logs a pretty graph visualization of the current branch. Includes all commits
     lga = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)' --all
-    # log one line
+
+    # Used like `git lol`
+    # Read like "log one line"
+    # Logs a single line of each commit.
     lol = log --oneline
-    lcd = log production..HEAD --first-parent --format=format:'%C(cyan)%h%C(reset)%C(green) | %C(reset)%C(bold)%<(20)%an%C(reset)%C(green) | %C(reset)%s'
-    lsp = log --first-parent --format=format:'%C(cyan)%h%C(reset)%C(green) | %C(reset)%C(bold)%<(20)%an%C(reset)%C(green) | %C(reset)%s'
-    # log info
+
+    # Used like `git log-file {file-name}`
+    # Logs specific commits which changed a file.
+    log-file = log --
+
+    # Used like `git log-file-changes {file-name}`
+    # Logs specific changes to a file.
+    log-file-changes = log --patch --
+
+    # Used like `git log-table-merges`
     # Logs in the format AUTHOR | HASH | DATE | ONE-LINE-COMMIT-MSG
-    li = log --first-parent --format=format:'%C(reset)%C(bold)%<(20)%an%C(reset)%C(green) | %C(reset)%h%C(green) | %C(reset)%as%C(green) | %C(reset)%s'
-    # log info full
+    # Only logs merge commits
+    log-table-merges = log --first-parent --format=format:'%C(reset)%C(bold)%<(20)%an%C(reset)%C(green) | %C(reset)%h%C(green) | %C(reset)%as%C(green) | %C(reset)%s'
+
+    # Used like `git log-table`
     # Logs in the format AUTHOR | HASH | DATE | ONE-LINE-COMMIT-MSG
-    lif = log --format=format:'%C(reset)%C(bold)%<(20)%an%C(reset)%C(green) | %C(reset)%h%C(green) | %C(reset)%as%C(green) | %C(reset)%s'
-    # log cv2
-    # logs things committed by CV2 devs
-    # Use --author='\(Tyler Leonhardt\)\|\(Nidhi Ramanathan\)\|\(George Johnston\)\|\(Rob Giusti\)' on the command line for similar filtering
-    lcv2 = log --author='(Tyler Leonhardt)|(Nidhi Ramanathan)|(George Johnston)|(Rob Giusti)'
+    log-table = log --format=format:'%C(reset)%C(bold)%<(20)%an%C(reset)%C(green) | %C(reset)%h%C(green) | %C(reset)%as%C(green) | %C(reset)%s'
 
-    cg = config --global
-    cm = checkout master
-    ci = commit
-    com = commit -m
-    co = checkout
-    br = branch
+    # Used like `git list-aliases`
+    # Lists all of the alieses in your .gitconfig
+    list-aliases = config --get-regexp alias
 
-    la = config --get-regexp alias
-
+    # Used like `git add-config-file {path\to\file}`
+    # Causes your local git to ignore the file without putting it in the .gitignore
+    # This is generally used for local configuration files but can also be used for
+    # files Unity touches that you never want to check in.
     add-config-file = update-index --skip-worktree
+    
+    # Used like `git remove-config-file {path\to\file}`
+    # Causes your local git to track a file again that has been ignored with
+    # `add-config-file`
     remove-config-file = update-index --no-skip-worktree
 
-    # Pull a different branch than the one you are on.
-    pull-other = "! git fetch origin $1:$1; :"
+    # Used like `git pull-other {branch-name}`
+    # Pull a different branch than the one you are on without changing branches.
+    # This is faster than moving to the branch and pulling it.
+    pull-other = "! git fetch origin $1:$1 && git branch --set-upstream-to=origin/$1 $1; :"
 
-    # Clears the workspace of changes
+    # Used like `git clear`
+    # Clears any modifications to files that haven't been checked in.
     clear = "! git add -A; git reset --hard; :"
 
-    # Pull a different branch than the one you are on and check it out.
+    # Used like `git clear-assets`
+    # Clears any modifications to files that generally shouldn't be checked in.
+    # This is stuff Unity churns in the normal course of Rec Room development.
+    clear-assets = checkout HEAD~ -- **/*.asset **/*.prefab **/*.spriteatlas
+
+    # Used like `git checkout-latest {branch-name}`
+    # Pull a different branch than the one you are on and check it out on the latest
+    # commit.
     checkout-latest = "! git pull-other $1; git checkout $1; :"
 
-    # Pull a different branch than the one you are on and check it out.
-    remove-last = "! git clear; git reset HEAD~1; git add -A; git stash; git reset HEAD~1 --hard; git stash pop; git add -A; git commit -m 'Top'; :"
-
-    # Used like "git log-new integration"
+    # Used like `git log-new {new-branch-name}`
+    # Or like `git log-new {base-branch-name} {new-branch-name}`
     # Logs commits that exist in the second branch but not in the first branch.
     # If a second branch is not provided, logs commits that exist in HEAD but not in the first branch.
     # This is useful for seeing what will ship when you are merging a branch into a release branch.
-    log-new = "! first=$1; shift; if [[ $1 != -* ]]; then second=$1; shift; fi; git log $first..${second:-HEAD} $@; :"
+    log-new = "! first=$1; shift; if [[ -z $1 ]]; then second=$first; first='HEAD'; else second=$1; shift; fi; git log $first..$second $@; :"
+
+    # Used like `git into-remote`
+    # Turns the current branch into a remote branch.
+    into-remote = "! branch=`git branch --show-current`; git push --set-upstream origin $branch; :"
+
+    # used like  `git giga-delete {branch-name}`
+    # Deletes both the local and remote counterparts of a branch.
+    giga-delete = "! git branch -D $1; git delete-remote $1; :"
+
+    # used like  `git giga-delete-tag {tag-name}`
+    # Deletes both the local and remote counterparts of a branch.
+    giga-delete-tag = "! git tag -d $1; git delete-remote $1; :"
 
     # RecRoom
+    # Used like `git list-remote`.
+    # Lists all of the remote branch names and their authors.
     list-remote = for-each-ref --format=' %(authorname) %09 %(refname)' --sort=authorname
+    
+    # Used like `git new-remote {branch-name}`
+    # Creates a new remote branch (that can be PR'd) from the current branch with the specified name.
     new-remote = push --set-upstream origin
+    
+    # Used like `git delete-remote {branch-name}`
+    # Deletes a remote branch.
     delete-remote = push origin --delete
+
+    # Used like `git my-branches`
+    # Lists branches matching my user directory
+    my-branches = "! git branch --all | grep 'users/tyler'; :"
+
+    # Used like `git 
+    subsurface-commit = "! if [[ -z $1 ]]; then git commit --allow-empty -m \"Empty\"; else git commit --allow-empty -m \"$@\"; fi; git add -A; git commit -m \"subsurface commit\"; git rebase HEAD~2 --interactive; :"
+
+    # Used like `git empty-commit`
+    # Creates an empty commit
+    empty-commit = "! git commit --allow-empty -m \"Empty\"; :"
+
+    # Used like `git unchange {file-name}`
+    # Resets and restores a file to the version from the previous commit.
+    unchange = "! git reset $1; git restore $1; :"
+
+    # Used like `git is-live {commit-hash}`
+    # Prints whether the commit is live or not.
+    is-live = "! git merge-base --is-ancestor $1 origin/releases/live; if [[ -z $? ]]; then echo 'The commit is not live.'; else echo 'The commit is live.'; fi; :"
+
+[core]
+    autocrlf = input
+    commentChar = @
+
+[credential]
+    helper = manager
+    useHttpPath = true
+
+[credential "https://github.com"]
+    username = tyleo
+
+[diff]
+    tool = araxis
+
+[difftool "araxis"]
+    path = C:\\Program Files\\Araxis\\Araxis Merge\\compare.exe
+
+[difftool "vscode"]
+    cmd = code --wait --diff $LOCAL $REMOTE
+
+[filter "lfs"]
+    process = git-lfs filter-process
+    required = true
+    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f
+
+[merge]
+    tool = araxis
+
+[mergetool]
+    keepBackup = false
+
+[mergetool "araxis"]
+    path = C:\\Program Files\\Araxis\\Araxis Merge\\compare.exe
+
+[mergetool "vscode"]
+    cmd = code --wait $MERGED
+
+[pull]
+    rebase = true
+
 [rerere]
     enabled = true
-[credential]
-	helper = manager
-	useHttpPath = true
+
 [user]
-	name = Tyler Wolf Leonhardt
-	email = tyler.wolf.leonhardt@gmail.com
-[filter "lfs"]
-	process = git-lfs filter-process
-	required = true
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-[gui]
-	recentrepo = C:/git/RecRoom
-[pull]
-	rebase = true
+    name = tyleo
+    email = git@tyleo.com
