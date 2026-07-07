@@ -148,6 +148,28 @@ zshrc=~/.zshrc
 
 ## System Functions
 
+# Enable key repeat when holding a key (disables the accent picker)
+keyrepeat_on() {
+  if [[ -n "$1" ]]; then
+    defaults write "$1" ApplePressAndHoldEnabled -bool false
+    echo "Key repeat enabled for $1. Restart the app to apply."
+  else
+    defaults write -g ApplePressAndHoldEnabled -bool false
+    echo "Key repeat enabled globally. Log out/in (or restart apps) to apply."
+  fi
+}
+
+# Restore the default press-and-hold accent picker
+keyrepeat_off() {
+  if [[ -n "$1" ]]; then
+    defaults delete "$1" ApplePressAndHoldEnabled 2>/dev/null
+    echo "Restored default press-and-hold for $1. Restart the app to apply."
+  else
+    defaults delete -g ApplePressAndHoldEnabled 2>/dev/null
+    echo "Restored default press-and-hold globally. Log out/in to apply."
+  fi
+}
+
 # Make Dock pop up instantly
 set_dock_animation_speed() {
   local autohide_delay="${1:-0.05}"
