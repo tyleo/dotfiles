@@ -17,6 +17,12 @@ if ! command -v claude &>/dev/null; then
   curl -fsSL https://claude.ai/install.sh | bash
 fi
 
+# herdr - terminal multiplexer for coding agents. Installs to ~/.local/bin and
+# self-updates.
+if ! command -v herdr &>/dev/null; then
+  curl -fsSL https://herdr.dev/install.sh | sh
+fi
+
 # Oh My Zsh - zsh config framework. Unattended and `KEEP_ZSHRC=yes` so it never
 # clobbers a dotfiles-managed `~/.zshrc`. Run before your dotfiles write
 # `~/.zshrc`, or have `~/.zshrc` source `$ZSH/oh-my-zsh.sh`.
