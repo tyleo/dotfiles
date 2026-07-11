@@ -148,68 +148,89 @@ zshrc=~/.zshrc
 
 ## System Functions
 
-# Enable key repeat when holding a key (disables the accent picker)
-keyrepeat_on() {
-  if [[ -n "$1" ]]; then
-    defaults write "$1" ApplePressAndHoldEnabled -bool false
-    echo "Key repeat enabled for $1. Restart the app to apply."
-  else
-    defaults write -g ApplePressAndHoldEnabled -bool false
-    echo "Key repeat enabled globally. Log out/in (or restart apps) to apply."
-  fi
-}
-
-# Restore the default press-and-hold accent picker
-keyrepeat_off() {
-  if [[ -n "$1" ]]; then
-    defaults delete "$1" ApplePressAndHoldEnabled 2>/dev/null
-    echo "Restored default press-and-hold for $1. Restart the app to apply."
-  else
-    defaults delete -g ApplePressAndHoldEnabled 2>/dev/null
-    echo "Restored default press-and-hold globally. Log out/in to apply."
-  fi
-}
-
 # Make Dock pop up instantly
 set_dock_animation_speed() {
   local autohide_delay="${1:-0.05}"
   local autohide_time_modifier="${2:-0.5}"
-
-  defaults write com.apple.dock autohide-delay -float "${autohide_delay}"
-  defaults write com.apple.dock autohide-time-modifier -float "${autohide_time_modifier}"
-  killall Dock
+  if defaults write com.apple.dock autohide-delay -float "${autohide_delay}" \
+    && defaults write com.apple.dock autohide-time-modifier -float "${autohide_time_modifier}"; then
+    killall Dock
+    echo "✅ Dock set to pop up instantly"
+  else
+    echo "❌ Failed to set Dock animation speed"
+    return 1
+  fi
 }
 
 # Restore Dock to default animation
 restore_dock_animation_speed() {
-  defaults delete com.apple.dock autohide-time-modifier
-  defaults delete com.apple.dock autohide-delay
+  defaults delete com.apple.dock autohide-time-modifier 2>/dev/null
+  defaults delete com.apple.dock autohide-delay 2>/dev/null
   killall Dock
+  echo "✅ Restored default Dock animation"
+}
+
+# Make holding a key repeat it (instead of showing the accent picker).
+set_key_repeat() {
+  if defaults write -g ApplePressAndHoldEnabled -bool false; then
+    echo "✅ Key repeat enabled. Log out and back in (or restart apps) to apply"
+  else
+    echo "❌ Failed to enable key repeat"
+    return 1
+  fi
+}
+
+# Restore default press-and-hold behavior (accent picker on key hold).
+restore_key_repeat() {
+  defaults delete -g ApplePressAndHoldEnabled 2>/dev/null
+  echo "✅ Restored press-and-hold. Log out and back in to apply"
 }
 
 # Make ForkLift the default app for opening folders.
 set_file_viewer_to_forklift() {
-  defaults write -g NSFileViewer -string com.binarynights.ForkLift
-  defaults write com.apple.LaunchServices/com.apple.launchservices.secure LSHandlers -array-add '{LSHandlerContentType="public.folder";LSHandlerRoleAll="com.binarynights.ForkLift";}'
+  if defaults write -g NSFileViewer -string com.binarynights.ForkLift \
+    && defaults write com.apple.LaunchServices/com.apple.launchservices.secure LSHandlers -array-add '{LSHandlerContentType="public.folder";LSHandlerRoleAll="com.binarynights.ForkLift";}'; then
+    killall Finder
+    echo "✅ ForkLift set as the default folder viewer. Log out and back in for it to fully apply"
+  else
+    echo "❌ Failed to set ForkLift as the default folder viewer"
+    return 1
+  fi
 }
 
 # Restore Finder as the default app for opening folders.
 restore_file_viewer() {
-  defaults write com.apple.LaunchServices/com.apple.launchservices.secure LSHandlers -array-add '{LSHandlerContentType="public.folder";LSHandlerRoleAll="com.apple.finder";}'
-  defaults delete -g NSFileViewer
+  if defaults write com.apple.LaunchServices/com.apple.launchservices.secure LSHandlers -array-add '{LSHandlerContentType="public.folder";LSHandlerRoleAll="com.apple.finder";}'; then
+    defaults delete -g NSFileViewer 2>/dev/null
+    killall Finder
+    echo "✅ Restored Finder as the default folder viewer. Log out and back in for it to fully apply"
+  else
+    echo "❌ Failed to restore Finder as the default folder viewer"
+    return 1
+  fi
 }
 
 # Restart the display and brightness services to fix monitor glitches.
 reload_monitors() {
-  sudo killall -HUP corebrightnessd
-  sudo killall -HUP WindowServer
+  if sudo killall -HUP corebrightnessd && sudo killall -HUP WindowServer; then
+    echo "✅ Reloaded display and brightness services"
+  else
+    echo "❌ Failed to reload display and brightness services"
+    return 1
+  fi
 }
 
 # Reload ~/.zshrc into the current shell.
 reload_zshrc() {
-  source ~/.zshrc
-  echo "✅ Reloaded ~/.zshrc"
+  if source ~/.zshrc; then
+    echo "✅ Reloaded ~/.zshrc"
+  else
+    echo "❌ Failed to reload ~/.zshrc"
+    return 1
+  fi
 }
+
+## cd
 
 # Change into the git directory.
 cdg() {
