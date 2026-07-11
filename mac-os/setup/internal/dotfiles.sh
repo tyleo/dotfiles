@@ -10,9 +10,6 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Repo root, located via `git` so it survives moving this script.
 REPO="$(git -C "$DIR" rev-parse --show-toplevel)"
 
-# VS Code keeps its user config under Application Support, not a dotfile path.
-VSCODE="$HOME/Library/Application Support/Code/User"
-
 items=(
   "$REPO/mac-os/usr/.claude/file-suggestion.sh"
   "$HOME/.claude/file-suggestion.sh"
@@ -52,9 +49,6 @@ items=(
 
   "$REPO/shared/usr/.vimrc"
   "$HOME/.vimrc"
-
-  "$REPO/shared/apps/visual-studio-code/settings.json"
-  "$VSCODE/settings.json"
 )
 
 install_rows 2 install_dotfile "${items[@]}"
