@@ -27,6 +27,12 @@
     # difftool.
     ddt = difftool --dir-diff
 
+    # Used like `git ddth`
+    # Reads like "directory difftool head"
+    # Diffs the working tree against HEAD, showing all uncommitted changes
+    # (staged and unstaged) in the directory difftool.
+    ddth = difftool --dir-diff HEAD
+
     # Used like `git ddtp` or `git ddtp production`
     # Reads like "directory difftool previous"
     # Diffs the latest commit in a branch against the previous commit in the branch, showing the
