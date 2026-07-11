@@ -31,7 +31,12 @@
     # Reads like "directory difftool head"
     # Diffs the working tree against HEAD, showing all uncommitted changes
     # (staged and unstaged) in the directory difftool.
-    ddth = difftool --dir-diff HEAD
+    ddth = "!f() { \
+        u=$(git ls-files -o --exclude-standard); \
+        [ -n \"$u\" ] && printf '%s' \"$u\" | tr '\\n' '\\0' | xargs -0 git add -N --; \
+        git difftool --dir-diff HEAD; \
+        [ -n \"$u\" ] && printf '%s' \"$u\" | tr '\\n' '\\0' | xargs -0 git reset -q --; \
+    }; f"
 
     # Used like `git ddtp` or `git ddtp production`
     # Reads like "directory difftool previous"
