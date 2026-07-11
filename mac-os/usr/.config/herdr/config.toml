@@ -1,0 +1,42 @@
+onboarding = false
+
+[keys]
+focus_agent = ["prefix+ctrl+1..9"]
+
+[[keys.command]]
+key = "prefix+a"
+type = "pane"
+command = "git pull; echo; echo 'Press Enter to continue...'; read _"
+description = "git pull"
+
+[[keys.command]]
+key = "prefix+d"
+type = "shell"
+command = "git ddth"
+description = "git ddth"
+
+
+[[keys.command]]
+key = "prefix+o"
+type = "shell"
+command = "code ."
+description = "code ."
+
+[[keys.command]]
+key = "prefix+z"
+type = "pane"
+command = "git push; echo; echo 'Press Enter to continue...'; read _"
+description = "git push"
+
+[[keys.command]]
+key = "prefix+shift+z"
+type = "pane"
+command = "git push --force-with-lease; echo; echo 'Press Enter to continue...'; read _"
+description = "git push --force-with-lease"
+
+[theme]
+name = "terminal"
+auto_switch = false
+
+[ui]
+agent_panel_sort = "spaces"

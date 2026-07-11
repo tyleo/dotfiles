@@ -26,6 +26,9 @@ items=(
   "$REPO/mac-os/usr/.config/ghostty/config"
   "$HOME/.config/ghostty/config"
 
+  "$REPO/mac-os/usr/.config/herdr/config.toml"
+  "$HOME/.config/herdr/config.toml"
+
   "$REPO/mac-os/usr/.config/karabiner/karabiner.json"
   "$HOME/.config/karabiner/karabiner.json"
 
