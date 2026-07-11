@@ -30,7 +30,7 @@
     # Used like `git ddth`
     # Reads like "directory difftool head"
     # Diffs the working tree against HEAD, showing all uncommitted changes
-    # (staged and unstaged) in the directory difftool.
+    # (staged, unstaged, and new untracked files) in the directory difftool.
     ddth = "!f() { \
         u=$(git ls-files -o --exclude-standard); \
         [ -n \"$u\" ] && printf '%s' \"$u\" | tr '\\n' '\\0' | xargs -0 git add -N --; \
