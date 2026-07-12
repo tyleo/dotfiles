@@ -16,10 +16,16 @@ command = "git ddth"
 description = "git ddth"
 
 [[keys.command]]
-key = "prefix+o"
+key = "prefix+i"
 type = "shell"
 command = "code ."
 description = "code ."
+
+[[keys.command]]
+key = "prefix+o"
+type = "shell"
+command = "open"
+description = "open"
 
 [[keys.command]]
 key = "prefix+u"
