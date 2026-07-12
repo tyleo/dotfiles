@@ -210,6 +210,24 @@ restore_file_viewer() {
   fi
 }
 
+# Make Finder show hidden files.
+set_finder_show_hidden_files() {
+  if defaults write com.apple.finder AppleShowAllFiles -bool true; then
+    killall Finder
+    echo "✅ Finder set to show hidden files"
+  else
+    echo "❌ Failed to set Finder to show hidden files"
+    return 1
+  fi
+}
+
+# Restore default Finder behavior (hidden files not shown).
+restore_finder_show_hidden_files() {
+  defaults delete com.apple.finder AppleShowAllFiles 2>/dev/null
+  killall Finder
+  echo "✅ Restored Finder to hiding hidden files"
+}
+
 # Restart the display and brightness services to fix monitor glitches.
 reload_monitors() {
   if sudo killall -HUP corebrightnessd && sudo killall -HUP WindowServer; then
