@@ -24,8 +24,8 @@ description = "code ."
 [[keys.command]]
 key = "prefix+o"
 type = "shell"
-command = "open"
-description = "open"
+command = "open ."
+description = "open ."
 
 [[keys.command]]
 key = "prefix+u"
