@@ -1,5 +1,7 @@
 # Homebrew formulae & casks. Installed by homebrew.sh.
 
+# Clone of cat(1) with syntax highlighting and Git integration
+brew "bat"
 # Secure runtime for JavaScript and TypeScript
 brew "deno"
 # Play, record, convert, and stream select audio and video codecs
@@ -10,10 +12,14 @@ brew "fzf"
 brew "gh"
 # Distributed revision control system
 brew "git"
+# Syntax-highlighting pager for git and diff output
+brew "git-delta"
 # Quickly rewrite git repository history
 brew "git-filter-repo"
 # Git extension for versioning large files
 brew "git-lfs"
+# Render markdown on the CLI
+brew "glow"
 # Graph visualization software from AT&T and Bell Labs
 brew "graphviz"
 # Website copier/offline browser
