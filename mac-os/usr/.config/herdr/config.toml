@@ -30,8 +30,8 @@ description = "herdr-file-viewer-tab"
 [[keys.command]]
 key = "prefix+shift+o"
 type = "shell"
-command = "open ."
-description = "open ."
+command = "open -a ForkLift ."
+description = "open -a ForkLift ."
 
 [[keys.command]]
 key = "prefix+u"
