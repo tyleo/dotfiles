@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
 
-# Full new-Mac setup. Runs each step below in order; every step is also safe to
-# run on its own (e.g. `internal/vscode.sh` to just refresh extensions).
+# Full new-Mac setup. Runs each step below in order. Every step is also safe
+# to run on its own.
 #
-# `homebrew.sh` is listed first, to install that foundation plus every
-# `Brewfile` package once up front. `dotfiles.sh` runs after the tool
-# installers, so it lays the managed shell rc files down over whatever they
-# appended to them. `bin-links.sh` runs last, linking app CLIs into
-# `~/.local/bin` once those apps are in `/Applications`. `zsh-plugins.sh` clones
-# the Oh My Zsh custom plugins, so it leans on `cli.sh`'s Oh My Zsh install.
+# Ordering:
+#   1. homebrew.sh runs first to install Homebrew plus every Brewfile package.
+#   2. default-apps.sh binds file types to apps, so it follows the app
+#      installers.
+#   3. zsh-plugins.sh clones the Oh My Zsh custom plugins, so it follows
+#      cli.sh's Oh My Zsh install.
+#   4. dotfiles.sh runs after the tool installers to lay the managed rc files
+#      over whatever they appended.
+#   5. system-setup.sh applies macOS settings via the .zshrc setters. It reads
+#      the repo copy, so it does not depend on dotfiles.sh.
+#   6. bin-links.sh runs last to link app CLIs into ~/.local/bin.
 
 set -euo pipefail
 
@@ -26,8 +31,10 @@ steps=(
   node.sh
   pkg.sh
   vscode.sh
+  default-apps.sh
   zsh-plugins.sh
   dotfiles.sh
+  system-setup.sh
   bin-links.sh
 )
 
