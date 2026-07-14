@@ -278,6 +278,105 @@ ext_to_webp() {
   done
 }
 
+## duti
+
+# Print the app that opens files with the given extension
+# (e.g. get_default_app_for_extension mkv -> VLC).
+get_default_app_for_extension() {
+  local ext="$1"
+
+  if [[ -z "$ext" ]]; then
+    echo "usage: get_default_app_for_extension <extension>"
+    return 1
+  fi
+
+  local out
+  out="$(duti -x "${ext#.}")" || return 1
+  echo "$out" | sed -n '1s/\.app$//p'
+}
+
+# Print the bundle id of the app that opens files with the given extension
+# (e.g. get_default_app_id_for_extension mkv -> org.videolan.vlc).
+get_default_app_id_for_extension() {
+  local ext="$1"
+
+  if [[ -z "$ext" ]]; then
+    echo "usage: get_default_app_id_for_extension <extension>"
+    return 1
+  fi
+
+  local out
+  out="$(duti -x "${ext#.}")" || return 1
+  echo "$out" | sed -n '3p'
+}
+
+# Set the default app for a file extension by app name
+# (e.g. set_default_app_for_extension mkv VLC).
+set_default_app_for_extension() {
+  local ext="$1" app="$2"
+
+  if [[ -z "$ext" || -z "$app" ]]; then
+    echo "usage: set_default_app_for_extension <extension> <app-name>"
+    return 1
+  fi
+
+  local bundle_id
+  bundle_id="$(get_app_id "$app")" || return 1
+  set_default_app_by_id_for_extension "$ext" "$bundle_id"
+}
+
+# Set the default app for a file extension by bundle id
+# (e.g. set_default_app_by_id_for_extension mkv org.videolan.vlc).
+set_default_app_by_id_for_extension() {
+  local ext="$1" bundle_id="$2"
+
+  if [[ -z "$ext" || -z "$bundle_id" ]]; then
+    echo "usage: set_default_app_by_id_for_extension <extension> <bundle-id>"
+    return 1
+  fi
+
+  ext=".${ext#.}"
+  if duti -s "$bundle_id" "$ext" all; then
+    echo "✅ $ext now opens with $bundle_id"
+  else
+    echo "❌ Failed to set default app for $ext"
+    return 1
+  fi
+}
+
+# Set the default app for a UTI by app name
+# (e.g. set_default_app_for_uti org.matroska.mkv VLC).
+set_default_app_for_uti() {
+  local uti="$1" app="$2"
+
+  if [[ -z "$uti" || -z "$app" ]]; then
+    echo "usage: set_default_app_for_uti <uti> <app-name>"
+    return 1
+  fi
+
+  local bundle_id
+  bundle_id="$(get_app_id "$app")" || return 1
+  set_default_app_by_id_for_uti "$uti" "$bundle_id"
+}
+
+# Set the default app for a UTI by bundle id
+# (e.g. set_default_app_by_id_for_uti org.matroska.mkv org.videolan.vlc).
+set_default_app_by_id_for_uti() {
+  local uti="$1" bundle_id="$2"
+
+  if [[ -z "$uti" || -z "$bundle_id" ]]; then
+    echo "usage: set_default_app_by_id_for_uti <uti> <bundle-id>"
+    return 1
+  fi
+
+  if duti -s "$bundle_id" "$uti" all; then
+    echo "✅ $uti now opens with $bundle_id"
+  else
+    echo "❌ Failed to set default app for $uti"
+    return 1
+  fi
+}
+
 ## ffmpeg
 
 # Convert a portion of a video into a high-quality GIF.
@@ -443,6 +542,53 @@ download_webpage() {
     "+${url}*" \
     "-*" \
     --disable-security-limits
+}
+
+## mdls
+
+# Print the UTI of a file extension
+# (e.g. get_uti_for_extension mkv -> org.matroska.mkv).
+get_uti_for_extension() {
+  local ext="$1"
+
+  if [[ -z "$ext" ]]; then
+    echo "usage: get_uti_for_extension <extension>"
+    return 1
+  fi
+
+  local dir
+  dir="$(mktemp -d)" || return 1
+  touch "$dir/file.${ext#.}"
+  mdls -name kMDItemContentType -raw "$dir/file.${ext#.}"
+  echo
+  rm -rf "$dir"
+}
+
+## osascript
+
+# Print the bundle identifier of the named app (e.g. get_app_id VLC).
+get_app_id() {
+  local app="$1"
+
+  if [[ -z "$app" ]]; then
+    echo "usage: get_app_id <app-name>"
+    return 1
+  fi
+
+  osascript -e "id of app \"$app\""
+}
+
+# Print the name of the app with the given bundle identifier
+# (e.g. get_app_name org.videolan.vlc -> VLC).
+get_app_name() {
+  local bundle_id="$1"
+
+  if [[ -z "$bundle_id" ]]; then
+    echo "usage: get_app_name <bundle-id>"
+    return 1
+  fi
+
+  osascript -e "name of app id \"$bundle_id\""
 }
 
 ## pdfimages
