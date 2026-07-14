@@ -624,11 +624,11 @@ download_max_quality_yt_video() {
 ## Voxel Max
 
 # Rename input to output, pack it with tyt, and commit it as release version.
-vmax-release() {
+vmax_release() {
   local input="$1" output="$2" version="$3"
 
   if [[ -z "$input" || -z "$output" || -z "$version" ]]; then
-    echo "usage: vmax-release <input-file> <output-file> <version>" >&2
+    echo "usage: vmax_release <input-file> <output-file> <version>" >&2
     return 1
   fi
 
