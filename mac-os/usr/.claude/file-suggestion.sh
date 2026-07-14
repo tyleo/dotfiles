@@ -3,5 +3,5 @@ QUERY=$(jq -r '.query // ""')
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 cd "$PROJECT_DIR" || exit 1
 {
-  rg --files --follow . 2>/dev/null
+  rg --files --follow --hidden --glob '!.git' . 2>/dev/null
 } | sort -u | fzf --filter "$QUERY" | head -15
