@@ -57,3 +57,9 @@ auto_switch = false
 
 [ui]
 agent_panel_sort = "spaces"
+
+[ui.sidebar.spaces]
+rows = [["state_icon", "workspace"]]
+
+[ui.sidebar.agents]
+rows = [["state_icon", "workspace", "tab"]]
