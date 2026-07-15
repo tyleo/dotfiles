@@ -1,5 +1,5 @@
 # Claude Code status line (Windows PowerShell)
-# Format: {db-icon} {context} {context-percent}% {bulb-icon} {model} {bolt-icon} {effort} {clock-icon} {5h-usage}% {reset-hh:mm} · {7d-usage}% {reset-day} {reset-hh:mm} {folder-icon} {working-directory} {branch-icon} {branch-name}
+# Format: {db-icon} {context} {context-percent}% {bulb-icon} {model} {bolt-icon} {effort} {calendar-icon} {7d-usage}% {reset-day} {reset-hh:mm} {timer-icon} {5h-usage}% {reset-hh:mm} {folder-icon} {working-directory} {branch-icon} {branch-name}
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding           = [System.Text.Encoding]::UTF8
@@ -16,6 +16,8 @@ $YELLOW = [char]27 + "[93m"
 $GREEN  = [char]27 + "[92m"
 # bright-cyan
 $BLUE   = [char]27 + "[96m"
+# 256-color indigo
+$INDIGO = [char]27 + "[38;5;105m"
 # 256-color medium-purple
 $PURPLE = [char]27 + "[38;5;141m"
 # Reset code
@@ -26,17 +28,19 @@ $RESET  = [char]27 + "[0m"
 ### Nerd Font glyphs
 
 # nf-fa-database | U+F1C0
-$ICON_DB     = [char]0xF1C0
+$ICON_DB       = [char]0xF1C0
 # nf-fa-bolt | U+F0E7
-$ICON_BOLT   = [char]0xF0E7
+$ICON_BOLT     = [char]0xF0E7
 # nf-md-lightbulb | U+F0335
-$ICON_BULB   = [char]::ConvertFromUtf32(0xF0335)
-# nf-md-clock | U+F0954
-$ICON_CLOCK  = [char]::ConvertFromUtf32(0xF0954)
+$ICON_BULB     = [char]::ConvertFromUtf32(0xF0335)
+# nf-md-calendar_week | U+F0A33
+$ICON_CALENDAR = [char]::ConvertFromUtf32(0xF0A33)
+# nf-md-timer_sand | U+F051F
+$ICON_TIMER    = [char]::ConvertFromUtf32(0xF051F)
 # nf-fa-folder | U+F07B
-$ICON_FOLDER = [char]0xF07B
+$ICON_FOLDER   = [char]0xF07B
 # nf-pl-branch | U+E0A0
-$ICON_BRANCH = [char]0xE0A0
+$ICON_BRANCH   = [char]0xE0A0
 
 ### Nerd Font progress-bar segments (Fira Code, U+EE00-U+EE05)
 
@@ -97,19 +101,26 @@ function Format-Effort($level) {
     return Colorize $YELLOW "$ICON_BOLT $level"
 }
 
-# Usage: clock icon + 5-hour usage percent with reset time, then 7-day usage
-# percent with reset day (RFC 5545 code) and time, both 24-hour clock.
-# Args: hourly_pct hourly_reset_epoch weekly_pct weekly_reset_epoch.
-function Format-Usage($h_pct, $h_reset, $w_pct, $w_reset) {
-    if ($null -eq $h_pct -or $null -eq $h_reset -or $null -eq $w_pct -or $null -eq $w_reset) { return "" }
+# Weekly usage: calendar icon + 7-day usage percent with reset day (RFC 5545
+# code) and time, 24-hour clock. Args: weekly_pct weekly_reset_epoch.
+function Format-UsageWeekly($w_pct, $w_reset) {
+    if ($null -eq $w_pct -or $null -eq $w_reset) { return "" }
     $inv       = [System.Globalization.CultureInfo]::InvariantCulture
-    $h_pct_str = '{0:D2}' -f [int][Math]::Round($h_pct)
     $w_pct_str = '{0:D2}' -f [int][Math]::Round($w_pct)
-    $h_time    = [DateTimeOffset]::FromUnixTimeSeconds([long]$h_reset).ToLocalTime().ToString('HH:mm', $inv)
     $w_local   = [DateTimeOffset]::FromUnixTimeSeconds([long]$w_reset).ToLocalTime()
     $w_day     = @('SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA')[[int]$w_local.DayOfWeek]
     $w_time    = $w_local.ToString('HH:mm', $inv)
-    return Colorize $GREEN "$ICON_CLOCK $h_pct_str% $h_time · $w_pct_str% $w_day $w_time"
+    return Colorize $GREEN "$ICON_CALENDAR $w_pct_str% $w_day $w_time"
+}
+
+# Hourly usage: timer icon + 5-hour usage percent with reset time, 24-hour
+# clock. Args: hourly_pct hourly_reset_epoch.
+function Format-UsageHourly($h_pct, $h_reset) {
+    if ($null -eq $h_pct -or $null -eq $h_reset) { return "" }
+    $inv       = [System.Globalization.CultureInfo]::InvariantCulture
+    $h_pct_str = '{0:D2}' -f [int][Math]::Round($h_pct)
+    $h_time    = [DateTimeOffset]::FromUnixTimeSeconds([long]$h_reset).ToLocalTime().ToString('HH:mm', $inv)
+    return Colorize $BLUE "$ICON_TIMER $h_pct_str% $h_time"
 }
 
 # Directory: folder icon + cwd, with $HOME collapsed to ~. Arg: cwd.
@@ -122,7 +133,7 @@ function Format-Directory($cwd) {
     } else {
         $display_dir = $display_cwd
     }
-    return Colorize $BLUE "$ICON_FOLDER $display_dir"
+    return Colorize $INDIGO "$ICON_FOLDER $display_dir"
 }
 
 # Git: branch icon + branch (or short SHA on detached HEAD), plus posh-git-style
@@ -200,12 +211,13 @@ $cwd           = if ($data.workspace.current_dir) { $data.workspace.current_dir 
 
 $parts = @()
 foreach ($seg in @(
-    (Format-Context   $ctx_pct),
-    (Format-Model     $model_display),
-    (Format-Effort    $effort_level),
-    (Format-Usage     $hourly_pct $hourly_reset $weekly_pct $weekly_reset),
-    (Format-Directory $cwd),
-    (Format-Git       $cwd)
+    (Format-Context     $ctx_pct),
+    (Format-Model       $model_display),
+    (Format-Effort      $effort_level),
+    (Format-UsageWeekly $weekly_pct $weekly_reset),
+    (Format-UsageHourly $hourly_pct $hourly_reset),
+    (Format-Directory   $cwd),
+    (Format-Git         $cwd)
 )) {
     if ($seg) { $parts += $seg }
 }

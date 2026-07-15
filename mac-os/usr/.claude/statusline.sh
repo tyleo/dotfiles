@@ -1,6 +1,6 @@
 #!/bin/bash
 # Claude Code status line
-# Format: {db-icon} {context} {context-percent}% {bulb-icon} {model} {bolt-icon} {effort} {clock-icon} {5h-usage}% {reset-hh:mm} | {7d-usage}% {reset-day} {reset-hh:mm} {folder-icon} {working-directory} {branch-icon} {branch-name}
+# Format: {db-icon} {context} {context-percent}% {bulb-icon} {model} {bolt-icon} {effort} {calendar-icon} {7d-usage}% {reset-day} {reset-hh:mm} {timer-icon} {5h-usage}% {reset-hh:mm} {folder-icon} {working-directory} {branch-icon} {branch-name}
 
 ## Colors
 
@@ -14,6 +14,8 @@ readonly YELLOW=$'\033[93m'
 readonly GREEN=$'\033[92m'
 # bright-cyan
 readonly BLUE=$'\033[96m'
+# 256-color indigo
+readonly INDIGO=$'\033[38;5;105m'
 # 256-color medium-purple
 readonly PURPLE=$'\033[38;5;141m'
 # Reset code
@@ -29,8 +31,10 @@ readonly ICON_DB=$(printf '\xef\x87\x80')
 readonly ICON_BOLT=$(printf '\xef\x83\xa7')
 # nf-md-lightbulb | U+F0335
 readonly ICON_BULB=$(printf '\xf3\xb0\x8c\xb5')
-# nf-md-clock | U+F0954
-readonly ICON_CLOCK=$(printf '\xf3\xb0\xa5\x94')
+# nf-md-calendar_week | U+F0A33
+readonly ICON_CALENDAR=$(printf '\xf3\xb0\xa8\xb3')
+# nf-md-timer_sand | U+F051F
+readonly ICON_TIMER=$(printf '\xf3\xb0\x94\x9f')
 # nf-fa-folder | U+F07B
 readonly ICON_FOLDER=$(printf '\xef\x81\xbb')
 # nf-pl-branch | U+E0A0
@@ -104,17 +108,26 @@ format_effort() {
     colorize "$YELLOW" "${ICON_BOLT} $1"
 }
 
-# Usage: clock icon + 5-hour usage percent with reset time, then 7-day usage
-# percent with reset day (RFC 5545 code) and time, both 24-hour clock.
-# Args: hourly_pct hourly_reset_time weekly_pct weekly_reset_day_time.
-format_usage() {
-    local h_pct="$1" h_time="$2" w_pct="$3" w_day_time="$4"
-    if [ -z "$h_pct" ] || [ -z "$h_time" ] || [ -z "$w_pct" ] || [ -z "$w_day_time" ]; then
+# Weekly usage: calendar icon + 7-day usage percent with reset day (RFC 5545
+# code) and time, 24-hour clock. Args: weekly_pct weekly_reset_day_time.
+format_usage_weekly() {
+    local w_pct="$1" w_day_time="$2"
+    if [ -z "$w_pct" ] || [ -z "$w_day_time" ]; then
+        return
+    fi
+    w_pct=$(printf '%02.0f' "$w_pct")
+    colorize "$GREEN" "${ICON_CALENDAR} ${w_pct}% ${w_day_time}"
+}
+
+# Hourly usage: timer icon + 5-hour usage percent with reset time, 24-hour
+# clock. Args: hourly_pct hourly_reset_time.
+format_usage_hourly() {
+    local h_pct="$1" h_time="$2"
+    if [ -z "$h_pct" ] || [ -z "$h_time" ]; then
         return
     fi
     h_pct=$(printf '%02.0f' "$h_pct")
-    w_pct=$(printf '%02.0f' "$w_pct")
-    colorize "$GREEN" "${ICON_CLOCK} ${h_pct}% ${h_time} · ${w_pct}% ${w_day_time}"
+    colorize "$BLUE" "${ICON_TIMER} ${h_pct}% ${h_time}"
 }
 
 # Directory: folder icon + cwd, with $HOME collapsed to ~. Arg: cwd.
@@ -126,7 +139,7 @@ format_directory() {
         "$HOME"/*)  display_dir="~${cwd#$HOME}" ;;
         *)          display_dir="$cwd" ;;
     esac
-    colorize "$BLUE" "${ICON_FOLDER} ${display_dir}"
+    colorize "$INDIGO" "${ICON_FOLDER} ${display_dir}"
 }
 
 # Git: branch icon + branch (or short SHA on detached HEAD), plus posh-git-style
@@ -231,12 +244,13 @@ EOF
 cwd="${workspace_dir:-$fallback_cwd}"
 
 out=""
-for seg in "$(format_context   "$ctx_pct")" \
-           "$(format_model     "$model_display")" \
-           "$(format_effort    "$effort_level")" \
-           "$(format_usage     "$hourly_pct" "$hourly_reset_time" "$weekly_pct" "$weekly_reset_day_time")" \
-           "$(format_directory "$cwd")" \
-           "$(format_git       "$cwd")"; do
+for seg in "$(format_context      "$ctx_pct")" \
+           "$(format_model        "$model_display")" \
+           "$(format_effort       "$effort_level")" \
+           "$(format_usage_weekly "$weekly_pct" "$weekly_reset_day_time")" \
+           "$(format_usage_hourly "$hourly_pct" "$hourly_reset_time")" \
+           "$(format_directory    "$cwd")" \
+           "$(format_git          "$cwd")"; do
     [ -z "$seg" ] && continue
     out="${out:+$out }$seg"
 done
