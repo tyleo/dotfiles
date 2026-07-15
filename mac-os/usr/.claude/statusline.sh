@@ -113,13 +113,20 @@ repeat() {
 ## Segment formatters
 
 # These return the segment body only; the render loop adds icon and color.
-# Empty string hides the segment; the usage formatters never return empty,
-# they substitute ?? placeholders instead.
+# Formatters never return empty: missing data renders as ? placeholders
+# (??% / ??:?? in usage) so segments never pop in or out.
 
-# Context: 10-char bar + percentage. Arg: used_percentage (may be empty).
+# Context: 10-char bar + percentage; empty bar with ??% when missing.
+# Arg: used_percentage (may be empty).
 format_context() {
     local pct_int filled center_filled center_empty left_cap right_cap bar pct_str
-    pct_int=$(printf '%.0f' "${1:-0}")
+    if [ -n "$1" ]; then
+        pct_int=$(printf '%.0f' "$1")
+        pct_str=$(printf '%02d' "$pct_int")
+    else
+        pct_int=0
+        pct_str="??"
+    fi
     # 10 cells total (left cap + 8 center + right cap), each = 10%, floor mapping
     filled=$(( pct_int / 10 ))
     [ "$filled" -gt 10 ] && filled=10
@@ -130,24 +137,22 @@ format_context() {
     [ "$center_filled" -gt 8 ] && center_filled=8
     center_empty=$(( 8 - center_filled ))
     bar="${left_cap}$(repeat "$ICON_BAR_CENTER_FULL" "$center_filled")$(repeat "$ICON_BAR_CENTER_EMPTY" "$center_empty")${right_cap}"
-    pct_str=$(printf '%02d' "$pct_int")
     printf '%s' "${bar} ${pct_str}%"
 }
 
 # Model: display name with leading "Claude " and any trailing parenthetical
-# suffix (e.g. " (1M context)") stripped. Arg: display_name.
+# suffix (e.g. " (1M context)") stripped; ? when missing. Arg: display_name.
 format_model() {
     local display_name="$1"
-    [ -z "$display_name" ] && return
+    [ -z "$display_name" ] && { printf '?'; return; }
     local short=${display_name#Claude }
     short=${short% (*}
     printf '%s' "$short"
 }
 
-# Effort: level. Only present when the model exposes reasoning. Arg: effort_level.
+# Effort: level; ? when the model doesn't expose reasoning. Arg: effort_level.
 format_effort() {
-    [ -z "$1" ] && return
-    printf '%s' "$1"
+    printf '%s' "${1:-?}"
 }
 
 # Weekly usage: 7-day usage percent with reset day (RFC 5545 code) and time,
@@ -172,10 +177,10 @@ format_usage_hourly() {
     printf '%s' "${h_pct}% ${h_time}"
 }
 
-# Directory: cwd, with $HOME collapsed to ~. Arg: cwd.
+# Directory: cwd, with $HOME collapsed to ~; ? when missing. Arg: cwd.
 format_directory() {
     local cwd="$1" display_dir
-    [ -z "$cwd" ] && return
+    [ -z "$cwd" ] && { printf '?'; return; }
     case "$cwd" in
         "$HOME") display_dir="~" ;;
         "$HOME"/*) display_dir="~${cwd#$HOME}" ;;
@@ -185,13 +190,14 @@ format_directory() {
 }
 
 # Git: branch (or short SHA on detached HEAD), plus posh-git-style
-# status counts. One `git status` fork covers branch + ahead/behind + file states;
-# stash count is read directly from the reflog file. Arg: cwd.
+# status counts; ? outside a git repo. One `git status` fork covers branch +
+# ahead/behind + file states; stash count is read directly from the reflog
+# file. Arg: cwd.
 format_git() {
     local cwd="$1"
-    [ -z "$cwd" ] && return
+    [ -z "$cwd" ] && { printf '?'; return; }
     local porcelain
-    porcelain=$(git -C "$cwd" -c core.fsmonitor= --no-optional-locks status --porcelain=v2 --branch 2>/dev/null) || return
+    porcelain=$(git -C "$cwd" -c core.fsmonitor= --no-optional-locks status --porcelain=v2 --branch 2>/dev/null) || { printf '?'; return; }
     local branch="" oid=""
     local ahead=0 behind=0 conflicted=0 staged=0 renamed=0 deleted=0 modified=0 untracked=0
     while IFS= read -r line; do
@@ -219,7 +225,7 @@ format_git() {
 $porcelain
 EOF
     [ "$branch" = "(detached)" ] && branch=${oid:0:7}
-    [ -z "$branch" ] && return
+    [ -z "$branch" ] && { printf '?'; return; }
 
     # Stash count from reflog file (no fork). Misses linked-worktree stashes.
     local stashed=0 _line
@@ -285,8 +291,7 @@ $jq_out
 EOF
 cwd="${workspace_dir:-$fallback_cwd}"
 
-# A segment hidden at runtime (empty body) still keeps its color slot; the
-# first rendered segment drops its icon when USE_NERD is false, since the
+# The first segment drops its icon when USE_NERD is false, since the
 # fallback dot is really a separator.
 out="" idx=0 first=true
 for name in "${SEGMENTS[@]}"; do
@@ -302,7 +307,6 @@ for name in "${SEGMENTS[@]}"; do
     esac
     color="${SEGMENT_COLORS[$idx]:-$WHITE}"
     idx=$(( idx + 1 ))
-    [ -z "$body" ] && continue
     if [ "$first" = true ]; then
         [ "$USE_NERD" != true ] && icon=""
         first=false

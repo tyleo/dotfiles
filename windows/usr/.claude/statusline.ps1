@@ -107,13 +107,19 @@ function Colorize($color, $text) {
 ## Segment formatters
 
 # These return the segment body only; the render loop adds icon and color.
-# Empty string hides the segment; the usage formatters never return empty,
-# they substitute ?? placeholders instead.
+# Formatters never return empty: missing data renders as ? placeholders
+# (??% / ??:?? in usage) so segments never pop in or out.
 
-# Context: 10-char bar + percentage. Arg: used_percentage (may be $null).
+# Context: 10-char bar + percentage; empty bar with ??% when missing.
+# Arg: used_percentage (may be $null).
 function Format-Context($pct) {
-    if ($null -eq $pct) { $pct = 0 }
-    $pct_int = [int][Math]::Round($pct)
+    if ($null -ne $pct) {
+        $pct_int = [int][Math]::Round($pct)
+        $pct_str = "{0:D2}" -f $pct_int
+    } else {
+        $pct_int = 0
+        $pct_str = "??"
+    }
     # 10 cells total (left cap + 8 center + right cap), each = 10%, floor mapping
     # ([int] cast on a double uses banker's rounding, so use Math.Floor for true floor)
     $filled = [Math]::Min(10, [int][Math]::Floor($pct_int / 10))
@@ -125,21 +131,20 @@ function Format-Context($pct) {
            ([string]$ICON_BAR_CENTER_FULL * $center_filled) +
            ([string]$ICON_BAR_CENTER_EMPTY * $center_empty) +
            [string]$right_cap
-    $pct_str = "{0:D2}" -f $pct_int
     return "$bar $pct_str%"
 }
 
 # Model: display name with leading "Claude " and any trailing parenthetical
-# suffix (e.g. " (1M context)") stripped. Arg: display_name.
+# suffix (e.g. " (1M context)") stripped; ? when missing. Arg: display_name.
 function Format-Model($display_name) {
-    if (-not $display_name) { return "" }
+    if (-not $display_name) { return "?" }
     $short_model = $display_name -replace '^Claude ', '' -replace ' \(.*\)$', ''
     return $short_model
 }
 
-# Effort: level. Only present when the model exposes reasoning. Arg: effort_level.
+# Effort: level; ? when the model doesn't expose reasoning. Arg: effort_level.
 function Format-Effort($level) {
-    if (-not $level) { return "" }
+    if (-not $level) { return "?" }
     return $level
 }
 
@@ -174,9 +179,9 @@ function Format-UsageHourly($h_pct, $h_reset) {
     return "$h_pct_str% $h_time"
 }
 
-# Directory: cwd, with $HOME collapsed to ~. Arg: cwd.
+# Directory: cwd, with $HOME collapsed to ~; ? when missing. Arg: cwd.
 function Format-Directory($cwd) {
-    if (-not $cwd) { return "" }
+    if (-not $cwd) { return "?" }
     $home_dir = $env:USERPROFILE -replace '\\','/'
     $display_cwd = $cwd -replace '\\','/'
     if ($display_cwd.StartsWith($home_dir, [System.StringComparison]::OrdinalIgnoreCase)) {
@@ -188,14 +193,15 @@ function Format-Directory($cwd) {
 }
 
 # Git: branch (or short SHA on detached HEAD), plus posh-git-style
-# status counts. One `git status` call covers branch + ahead/behind + file states;
-# stash count is read directly from the reflog file. Arg: cwd.
+# status counts; ? outside a git repo. One `git status` call covers branch +
+# ahead/behind + file states; stash count is read directly from the reflog
+# file. Arg: cwd.
 function Format-Git($cwd) {
-    if (-not $cwd) { return "" }
+    if (-not $cwd) { return "?" }
     $ErrorActionPreference = 'SilentlyContinue'
     $porcelain = & git -C "$cwd" -c core.fsmonitor= --no-optional-locks status --porcelain=v2 --branch 2>$null
     $ErrorActionPreference = 'Continue'
-    if ($LASTEXITCODE -ne 0) { return "" }
+    if ($LASTEXITCODE -ne 0) { return "?" }
 
     $branch = ""; $oid = ""
     $ahead = 0; $behind = 0
@@ -221,7 +227,7 @@ function Format-Git($cwd) {
         elseif ($line.StartsWith('? ')) { $untracked++ }
     }
     if ($branch -eq '(detached)') { $branch = $oid.Substring(0, 7) }
-    if (-not $branch) { return "" }
+    if (-not $branch) { return "?" }
 
     # Stash count from reflog file (no git call). Misses linked-worktree stashes.
     $stashLog = Join-Path $cwd '.git/logs/refs/stash'
@@ -260,8 +266,7 @@ $weekly_pct = $data.rate_limits.seven_day.used_percentage
 $weekly_reset = $data.rate_limits.seven_day.resets_at
 $cwd = if ($data.workspace.current_dir) { $data.workspace.current_dir } else { $data.cwd }
 
-# A segment hidden at runtime (empty body) still keeps its color slot; the
-# first rendered segment drops its icon when $USE_NERD is $false, since the
+# The first segment drops its icon when $USE_NERD is $false, since the
 # fallback dot is really a separator.
 $parts = @()
 $idx = 0
@@ -281,7 +286,6 @@ foreach ($name in $SEGMENTS) {
     if ($null -eq $icon) { continue }
     $color = if ($SEGMENT_COLORS[$idx]) { $SEGMENT_COLORS[$idx] } else { $WHITE }
     $idx++
-    if (-not $body) { continue }
     if ($first) {
         if (-not $USE_NERD) { $icon = '' }
         $first = $false
