@@ -112,8 +112,8 @@ format_usage() {
     if [ -z "$h_pct" ] || [ -z "$h_time" ] || [ -z "$w_pct" ] || [ -z "$w_day_time" ]; then
         return
     fi
-    h_pct=$(printf '%.0f' "$h_pct")
-    w_pct=$(printf '%.0f' "$w_pct")
+    h_pct=$(printf '%02.0f' "$h_pct")
+    w_pct=$(printf '%02.0f' "$w_pct")
     colorize "$GREEN" "${ICON_CLOCK} ${h_pct}% ${h_time} · ${w_pct}% ${w_day_time}"
 }
 

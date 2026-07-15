@@ -103,13 +103,13 @@ function Format-Effort($level) {
 function Format-Usage($h_pct, $h_reset, $w_pct, $w_reset) {
     if ($null -eq $h_pct -or $null -eq $h_reset -or $null -eq $w_pct -or $null -eq $w_reset) { return "" }
     $inv       = [System.Globalization.CultureInfo]::InvariantCulture
-    $h_pct_int = [int][Math]::Round($h_pct)
-    $w_pct_int = [int][Math]::Round($w_pct)
+    $h_pct_str = '{0:D2}' -f [int][Math]::Round($h_pct)
+    $w_pct_str = '{0:D2}' -f [int][Math]::Round($w_pct)
     $h_time    = [DateTimeOffset]::FromUnixTimeSeconds([long]$h_reset).ToLocalTime().ToString('HH:mm', $inv)
     $w_local   = [DateTimeOffset]::FromUnixTimeSeconds([long]$w_reset).ToLocalTime()
     $w_day     = @('SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA')[[int]$w_local.DayOfWeek]
     $w_time    = $w_local.ToString('HH:mm', $inv)
-    return Colorize $GREEN "$ICON_CLOCK $h_pct_int% $h_time · $w_pct_int% $w_day $w_time"
+    return Colorize $GREEN "$ICON_CLOCK $h_pct_str% $h_time · $w_pct_str% $w_day $w_time"
 }
 
 # Directory: folder icon + cwd, with $HOME collapsed to ~. Arg: cwd.
