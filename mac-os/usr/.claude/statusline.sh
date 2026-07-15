@@ -113,7 +113,8 @@ repeat() {
 ## Segment formatters
 
 # These return the segment body only; the render loop adds icon and color.
-# Empty string hides the segment.
+# Empty string hides the segment; the usage formatters never return empty,
+# they substitute ?? placeholders instead.
 
 # Context: 10-char bar + percentage. Arg: used_percentage (may be empty).
 format_context() {
@@ -150,24 +151,24 @@ format_effort() {
 }
 
 # Weekly usage: 7-day usage percent with reset day (RFC 5545 code) and time,
-# 24-hour clock. Args: weekly_pct weekly_reset_day_time.
+# 24-hour clock. Rate-limit data is absent until the first API response, so
+# missing values render as ?? placeholders instead of hiding the segment.
+# Args: weekly_pct weekly_reset_day_time.
 format_usage_weekly() {
     local w_pct="$1" w_day_time="$2"
-    if [ -z "$w_pct" ] || [ -z "$w_day_time" ]; then
-        return
-    fi
-    w_pct=$(printf '%02.0f' "$w_pct")
+    if [ -n "$w_pct" ]; then w_pct=$(printf '%02.0f' "$w_pct"); else w_pct="??"; fi
+    [ -z "$w_day_time" ] && w_day_time="?? ??:??"
     printf '%s' "${w_pct}% ${w_day_time}"
 }
 
 # Hourly usage: 5-hour usage percent with reset time, 24-hour clock.
+# Rate-limit data is absent until the first API response, so missing values
+# render as ?? placeholders instead of hiding the segment.
 # Args: hourly_pct hourly_reset_time.
 format_usage_hourly() {
     local h_pct="$1" h_time="$2"
-    if [ -z "$h_pct" ] || [ -z "$h_time" ]; then
-        return
-    fi
-    h_pct=$(printf '%02.0f' "$h_pct")
+    if [ -n "$h_pct" ]; then h_pct=$(printf '%02.0f' "$h_pct"); else h_pct="??"; fi
+    [ -z "$h_time" ] && h_time="??:??"
     printf '%s' "${h_pct}% ${h_time}"
 }
 

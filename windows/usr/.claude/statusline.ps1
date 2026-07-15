@@ -107,7 +107,8 @@ function Colorize($color, $text) {
 ## Segment formatters
 
 # These return the segment body only; the render loop adds icon and color.
-# Empty string hides the segment.
+# Empty string hides the segment; the usage formatters never return empty,
+# they substitute ?? placeholders instead.
 
 # Context: 10-char bar + percentage. Arg: used_percentage (may be $null).
 function Format-Context($pct) {
@@ -143,24 +144,33 @@ function Format-Effort($level) {
 }
 
 # Weekly usage: 7-day usage percent with reset day (RFC 5545 code) and time,
-# 24-hour clock. Args: weekly_pct weekly_reset_epoch.
+# 24-hour clock. Rate-limit data is absent until the first API response, so
+# missing values render as ?? placeholders instead of hiding the segment.
+# Args: weekly_pct weekly_reset_epoch.
 function Format-UsageWeekly($w_pct, $w_reset) {
-    if ($null -eq $w_pct -or $null -eq $w_reset) { return "" }
-    $inv = [System.Globalization.CultureInfo]::InvariantCulture
-    $w_pct_str = '{0:D2}' -f [int][Math]::Round($w_pct)
-    $w_local = [DateTimeOffset]::FromUnixTimeSeconds([long]$w_reset).ToLocalTime()
-    $w_day = @('SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA')[[int]$w_local.DayOfWeek]
-    $w_time = $w_local.ToString('HH:mm', $inv)
+    $w_pct_str = if ($null -ne $w_pct) { '{0:D2}' -f [int][Math]::Round($w_pct) } else { '??' }
+    if ($null -ne $w_reset) {
+        $inv = [System.Globalization.CultureInfo]::InvariantCulture
+        $w_local = [DateTimeOffset]::FromUnixTimeSeconds([long]$w_reset).ToLocalTime()
+        $w_day = @('SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA')[[int]$w_local.DayOfWeek]
+        $w_time = $w_local.ToString('HH:mm', $inv)
+    } else {
+        $w_day = '??'
+        $w_time = '??:??'
+    }
     return "$w_pct_str% $w_day $w_time"
 }
 
 # Hourly usage: 5-hour usage percent with reset time, 24-hour clock.
+# Rate-limit data is absent until the first API response, so missing values
+# render as ?? placeholders instead of hiding the segment.
 # Args: hourly_pct hourly_reset_epoch.
 function Format-UsageHourly($h_pct, $h_reset) {
-    if ($null -eq $h_pct -or $null -eq $h_reset) { return "" }
-    $inv = [System.Globalization.CultureInfo]::InvariantCulture
-    $h_pct_str = '{0:D2}' -f [int][Math]::Round($h_pct)
-    $h_time = [DateTimeOffset]::FromUnixTimeSeconds([long]$h_reset).ToLocalTime().ToString('HH:mm', $inv)
+    $h_pct_str = if ($null -ne $h_pct) { '{0:D2}' -f [int][Math]::Round($h_pct) } else { '??' }
+    $h_time = if ($null -ne $h_reset) {
+        $inv = [System.Globalization.CultureInfo]::InvariantCulture
+        [DateTimeOffset]::FromUnixTimeSeconds([long]$h_reset).ToLocalTime().ToString('HH:mm', $inv)
+    } else { '??:??' }
     return "$h_pct_str% $h_time"
 }
 
