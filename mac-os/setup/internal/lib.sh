@@ -117,6 +117,10 @@ install_dotfile() {
     echo "Backed up existing $dest to $dest.bak"
   fi
   cp "$src" "$dest"
+  # cp keeps an existing dest's mode, so re-apply the source's exec bit.
+  if [ -x "$src" ]; then
+    chmod +x "$dest"
+  fi
   echo "Installed $dest"
 }
 
