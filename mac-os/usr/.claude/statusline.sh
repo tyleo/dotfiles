@@ -2,6 +2,11 @@
 # Claude Code status line
 # Format: {db-icon} {context} {context-percent}% {bulb-icon} {model} {bolt-icon} {effort} {calendar-icon} {7d-usage}% {reset-day} {reset-hh:mm} {timer-icon} {5h-usage}% {reset-hh:mm} {folder-icon} {working-directory} {branch-icon} {branch-name}
 
+## Config
+
+# Nerd Font glyphs when true; middle-dot and shade fallbacks when false
+USE_NERD=true
+
 ## Colors
 
 # 256-color light coral
@@ -23,37 +28,65 @@ readonly RESET=$'\033[0m'
 
 ## Icons
 
-### Nerd Font glyphs
+if [ "$USE_NERD" = true ]; then
+    ### Nerd Font glyphs
 
-# nf-fa-database | U+F1C0
-readonly ICON_DB=$(printf '\xef\x87\x80')
-# nf-fa-bolt | U+F0E7
-readonly ICON_BOLT=$(printf '\xef\x83\xa7')
-# nf-md-lightbulb | U+F0335
-readonly ICON_BULB=$(printf '\xf3\xb0\x8c\xb5')
-# nf-md-calendar_week | U+F0A33
-readonly ICON_CALENDAR=$(printf '\xf3\xb0\xa8\xb3')
-# nf-md-timer_sand | U+F051F
-readonly ICON_TIMER=$(printf '\xf3\xb0\x94\x9f')
-# nf-fa-folder | U+F07B
-readonly ICON_FOLDER=$(printf '\xef\x81\xbb')
-# nf-pl-branch | U+E0A0
-readonly ICON_BRANCH=$(printf '\xee\x82\xa0')
+    # nf-fa-database | U+F1C0
+    readonly ICON_DB=$(printf '\xef\x87\x80')
+    # nf-fa-bolt | U+F0E7
+    readonly ICON_BOLT=$(printf '\xef\x83\xa7')
+    # nf-md-lightbulb | U+F0335
+    readonly ICON_BULB=$(printf '\xf3\xb0\x8c\xb5')
+    # nf-md-calendar_week | U+F0A33
+    readonly ICON_CALENDAR=$(printf '\xf3\xb0\xa8\xb3')
+    # nf-md-timer_sand | U+F051F
+    readonly ICON_TIMER=$(printf '\xf3\xb0\x94\x9f')
+    # nf-fa-folder | U+F07B
+    readonly ICON_FOLDER=$(printf '\xef\x81\xbb')
+    # nf-pl-branch | U+E0A0
+    readonly ICON_BRANCH=$(printf '\xee\x82\xa0')
 
-### Nerd Font progress-bar segments (Fira Code, U+EE00-U+EE05)
+    ### Nerd Font progress-bar segments (Fira Code, U+EE00-U+EE05)
 
-# left cap empty | U+EE00
-readonly ICON_BAR_LEFT_EMPTY=$(printf   '\xee\xb8\x80')
-# center cell empty | U+EE01
-readonly ICON_BAR_CENTER_EMPTY=$(printf '\xee\xb8\x81')
-# right cap empty | U+EE02
-readonly ICON_BAR_RIGHT_EMPTY=$(printf  '\xee\xb8\x82')
-# left cap full | U+EE03
-readonly ICON_BAR_LEFT_FULL=$(printf    '\xee\xb8\x83')
-# center cell full | U+EE04
-readonly ICON_BAR_CENTER_FULL=$(printf  '\xee\xb8\x84')
-# right cap full | U+EE05 (kept for completeness; unused under current spec)
-readonly ICON_BAR_RIGHT_FULL=$(printf   '\xee\xb8\x85')
+    # left cap empty | U+EE00
+    readonly ICON_BAR_LEFT_EMPTY=$(printf '\xee\xb8\x80')
+    # center cell empty | U+EE01
+    readonly ICON_BAR_CENTER_EMPTY=$(printf '\xee\xb8\x81')
+    # right cap empty | U+EE02
+    readonly ICON_BAR_RIGHT_EMPTY=$(printf '\xee\xb8\x82')
+    # left cap full | U+EE03
+    readonly ICON_BAR_LEFT_FULL=$(printf '\xee\xb8\x83')
+    # center cell full | U+EE04
+    readonly ICON_BAR_CENTER_FULL=$(printf '\xee\xb8\x84')
+    # right cap full | U+EE05 (kept for completeness; unused under current spec)
+    readonly ICON_BAR_RIGHT_FULL=$(printf '\xee\xb8\x85')
+else
+    ### Plain Unicode fallbacks
+
+    # middle dot | U+00B7
+    readonly ICON_DOT=$(printf '\xc2\xb7')
+    # context has no icon; every other icon is the dot
+    readonly ICON_DB=""
+    readonly ICON_BOLT="$ICON_DOT"
+    readonly ICON_BULB="$ICON_DOT"
+    readonly ICON_CALENDAR="$ICON_DOT"
+    readonly ICON_TIMER="$ICON_DOT"
+    readonly ICON_FOLDER="$ICON_DOT"
+    readonly ICON_BRANCH="$ICON_DOT"
+
+    ### Shade progress-bar segments
+
+    # light shade | U+2591
+    readonly ICON_SHADE_LIGHT=$(printf '\xe2\x96\x91')
+    # dark shade | U+2593
+    readonly ICON_SHADE_DARK=$(printf '\xe2\x96\x93')
+    readonly ICON_BAR_LEFT_EMPTY="$ICON_SHADE_LIGHT"
+    readonly ICON_BAR_CENTER_EMPTY="$ICON_SHADE_LIGHT"
+    readonly ICON_BAR_RIGHT_EMPTY="$ICON_SHADE_LIGHT"
+    readonly ICON_BAR_LEFT_FULL="$ICON_SHADE_DARK"
+    readonly ICON_BAR_CENTER_FULL="$ICON_SHADE_DARK"
+    readonly ICON_BAR_RIGHT_FULL="$ICON_SHADE_DARK"
+fi
 
 ## Reusable functions
 
@@ -81,7 +114,7 @@ format_context() {
     # 10 cells total (left cap + 8 center + right cap), each = 10%, floor mapping
     filled=$(( pct_int / 10 ))
     [ "$filled" -gt 10 ] && filled=10
-    if [ "$filled" -ge 1 ];  then left_cap="$ICON_BAR_LEFT_FULL";   else left_cap="$ICON_BAR_LEFT_EMPTY";   fi
+    if [ "$filled" -ge 1 ]; then left_cap="$ICON_BAR_LEFT_FULL"; else left_cap="$ICON_BAR_LEFT_EMPTY"; fi
     if [ "$filled" -ge 10 ]; then right_cap="$ICON_BAR_RIGHT_FULL"; else right_cap="$ICON_BAR_RIGHT_EMPTY"; fi
     center_filled=$(( filled - 1 ))
     [ "$center_filled" -lt 0 ] && center_filled=0
@@ -89,7 +122,7 @@ format_context() {
     center_empty=$(( 8 - center_filled ))
     bar="${left_cap}$(repeat "$ICON_BAR_CENTER_FULL" "$center_filled")$(repeat "$ICON_BAR_CENTER_EMPTY" "$center_empty")${right_cap}"
     pct_str=$(printf '%02d' "$pct_int")
-    colorize "$RED" "${ICON_DB} ${bar} ${pct_str}%"
+    colorize "$RED" "${ICON_DB:+${ICON_DB} }${bar} ${pct_str}%"
 }
 
 # Model: lightbulb icon + display name with leading "Claude " and any trailing
@@ -135,9 +168,9 @@ format_directory() {
     local cwd="$1" display_dir
     [ -z "$cwd" ] && return
     case "$cwd" in
-        "$HOME")    display_dir="~" ;;
-        "$HOME"/*)  display_dir="~${cwd#$HOME}" ;;
-        *)          display_dir="$cwd" ;;
+        "$HOME") display_dir="~" ;;
+        "$HOME"/*) display_dir="~${cwd#$HOME}" ;;
+        *) display_dir="$cwd" ;;
     esac
     colorize "$INDIGO" "${ICON_FOLDER} ${display_dir}"
 }
@@ -155,10 +188,10 @@ format_git() {
     while IFS= read -r line; do
         case "$line" in
             "# branch.head "*) branch=${line#"# branch.head "} ;;
-            "# branch.oid "*)  oid=${line#"# branch.oid "}    ;;
+            "# branch.oid "*) oid=${line#"# branch.oid "} ;;
             "# branch.ab "*)
                 local ab=${line#"# branch.ab "}
-                ahead=${ab%% *};  ahead=${ahead#+}
+                ahead=${ab%% *}; ahead=${ahead#+}
                 behind=${ab##* }; behind=${behind#-}
                 ;;
             "1 "*)
@@ -166,12 +199,12 @@ format_git() {
                 case "$x" in [MTADC]) staged=$((staged + 1)) ;; esac
                 case "$y" in
                     M|T) modified=$((modified + 1)) ;;
-                    D)   deleted=$((deleted + 1))   ;;
+                    D) deleted=$((deleted + 1)) ;;
                 esac
                 ;;
-            "2 "*) renamed=$((renamed + 1))       ;;
+            "2 "*) renamed=$((renamed + 1)) ;;
             "u "*) conflicted=$((conflicted + 1)) ;;
-            "? "*) untracked=$((untracked + 1))   ;;
+            "? "*) untracked=$((untracked + 1)) ;;
         esac
     done <<EOF
 $porcelain
@@ -186,17 +219,17 @@ EOF
     fi
 
     local s=""
-    if   [ "$ahead" -gt 0 ] && [ "$behind" -gt 0 ]; then s="${s}↕ ↑${ahead} ↓${behind} "
-    elif [ "$ahead"  -gt 0 ];                       then s="${s}↑${ahead} "
-    elif [ "$behind" -gt 0 ];                       then s="${s}↓${behind} "
+    if [ "$ahead" -gt 0 ] && [ "$behind" -gt 0 ]; then s="${s}↕ ↑${ahead} ↓${behind} "
+    elif [ "$ahead" -gt 0 ]; then s="${s}↑${ahead} "
+    elif [ "$behind" -gt 0 ]; then s="${s}↓${behind} "
     fi
     [ "$conflicted" -gt 0 ] && s="${s}✖${conflicted} "
-    [ "$stashed"    -gt 0 ] && s="${s}\$${stashed} "
-    [ "$staged"     -gt 0 ] && s="${s}+${staged} "
-    [ "$renamed"    -gt 0 ] && s="${s}»${renamed} "
-    [ "$deleted"    -gt 0 ] && s="${s}-${deleted} "
-    [ "$modified"   -gt 0 ] && s="${s}!${modified} "
-    [ "$untracked"  -gt 0 ] && s="${s}?${untracked} "
+    [ "$stashed" -gt 0 ] && s="${s}\$${stashed} "
+    [ "$staged" -gt 0 ] && s="${s}+${staged} "
+    [ "$renamed" -gt 0 ] && s="${s}»${renamed} "
+    [ "$deleted" -gt 0 ] && s="${s}-${deleted} "
+    [ "$modified" -gt 0 ] && s="${s}!${modified} "
+    [ "$untracked" -gt 0 ] && s="${s}?${untracked} "
 
     local status=""
     [ -n "$s" ] && status=" [${s% }]"
@@ -213,20 +246,20 @@ input=$(cat)
 # and so we don't depend on bash-only process substitution (settings.json
 # may invoke this via /bin/sh, which disables `<( )` in POSIX mode).
 jq_out=$(echo "$input" | jq -r '
-    .context_window.used_percentage        // "",
-    .model.display_name                    // "",
-    .effort.level                          // "",
+    .context_window.used_percentage // "",
+    .model.display_name // "",
+    .effort.level // "",
     .rate_limits.five_hour.used_percentage // "",
-    (.rate_limits.five_hour.resets_at      // "" |
+    (.rate_limits.five_hour.resets_at // "" |
         if . == "" then "" else strflocaltime("%H:%M") end),
     .rate_limits.seven_day.used_percentage // "",
-    (.rate_limits.seven_day.resets_at      // "" |
+    (.rate_limits.seven_day.resets_at // "" |
         if . == "" then "" else
             ["MO", "TU", "WE", "TH", "FR", "SA", "SU"][(strflocaltime("%u") | tonumber) - 1]
             + " " + strflocaltime("%H:%M")
         end),
-    .workspace.current_dir                 // "",
-    .cwd                                   // ""
+    .workspace.current_dir // "",
+    .cwd // ""
 ')
 {
     read -r ctx_pct
@@ -244,13 +277,13 @@ EOF
 cwd="${workspace_dir:-$fallback_cwd}"
 
 out=""
-for seg in "$(format_context      "$ctx_pct")" \
-           "$(format_model        "$model_display")" \
-           "$(format_effort       "$effort_level")" \
+for seg in "$(format_context "$ctx_pct")" \
+           "$(format_model "$model_display")" \
+           "$(format_effort "$effort_level")" \
            "$(format_usage_weekly "$weekly_pct" "$weekly_reset_day_time")" \
            "$(format_usage_hourly "$hourly_pct" "$hourly_reset_time")" \
-           "$(format_directory    "$cwd")" \
-           "$(format_git          "$cwd")"; do
+           "$(format_directory "$cwd")" \
+           "$(format_git "$cwd")"; do
     [ -z "$seg" ] && continue
     out="${out:+$out }$seg"
 done
