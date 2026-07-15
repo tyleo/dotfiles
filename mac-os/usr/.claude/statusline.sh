@@ -114,19 +114,15 @@ repeat() {
 
 # These return the segment body only; the render loop adds icon and color.
 # Formatters never return empty: missing data renders as ? placeholders
-# (??% / ??:?? in usage) so segments never pop in or out.
+# (??% / ??:?? in usage; 00% in context) so segments never pop in or out.
 
-# Context: 10-char bar + percentage; empty bar with ??% when missing.
+# Context: 10-char bar + percentage; empty bar with 00% when missing, since
+# a missing value means a fresh session whose context really is empty.
 # Arg: used_percentage (may be empty).
 format_context() {
     local pct_int filled center_filled center_empty left_cap right_cap bar pct_str
-    if [ -n "$1" ]; then
-        pct_int=$(printf '%.0f' "$1")
-        pct_str=$(printf '%02d' "$pct_int")
-    else
-        pct_int=0
-        pct_str="??"
-    fi
+    pct_int=$(printf '%.0f' "${1:-0}")
+    pct_str=$(printf '%02d' "$pct_int")
     # 10 cells total (left cap + 8 center + right cap), each = 10%, floor mapping
     filled=$(( pct_int / 10 ))
     [ "$filled" -gt 10 ] && filled=10

@@ -108,18 +108,14 @@ function Colorize($color, $text) {
 
 # These return the segment body only; the render loop adds icon and color.
 # Formatters never return empty: missing data renders as ? placeholders
-# (??% / ??:?? in usage) so segments never pop in or out.
+# (??% / ??:?? in usage; 00% in context) so segments never pop in or out.
 
-# Context: 10-char bar + percentage; empty bar with ??% when missing.
+# Context: 10-char bar + percentage; empty bar with 00% when missing, since
+# a missing value means a fresh session whose context really is empty.
 # Arg: used_percentage (may be $null).
 function Format-Context($pct) {
-    if ($null -ne $pct) {
-        $pct_int = [int][Math]::Round($pct)
-        $pct_str = "{0:D2}" -f $pct_int
-    } else {
-        $pct_int = 0
-        $pct_str = "??"
-    }
+    $pct_int = if ($null -ne $pct) { [int][Math]::Round($pct) } else { 0 }
+    $pct_str = "{0:D2}" -f $pct_int
     # 10 cells total (left cap + 8 center + right cap), each = 10%, floor mapping
     # ([int] cast on a double uses banker's rounding, so use Math.Floor for true floor)
     $filled = [Math]::Min(10, [int][Math]::Floor($pct_int / 10))
