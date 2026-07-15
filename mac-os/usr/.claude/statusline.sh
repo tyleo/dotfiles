@@ -72,7 +72,7 @@ else
 
     # middle dot | U+00B7
     readonly ICON_DOT=$(printf '\xc2\xb7')
-    # every icon is the dot; the render loop drops it from the first segment
+    # every icon is the dot
     readonly ICON_DB="$ICON_DOT"
     readonly ICON_BOLT="$ICON_DOT"
     readonly ICON_BULB="$ICON_DOT"
@@ -291,9 +291,7 @@ $jq_out
 EOF
 cwd="${workspace_dir:-$fallback_cwd}"
 
-# The first segment drops its icon when USE_NERD is false, since the
-# fallback dot is really a separator.
-out="" idx=0 first=true
+out="" idx=0
 for name in "${SEGMENTS[@]}"; do
     case "$name" in
         context) icon="$ICON_DB" body=$(format_context "$ctx_pct") ;;
@@ -307,10 +305,6 @@ for name in "${SEGMENTS[@]}"; do
     esac
     color="${SEGMENT_COLORS[$idx]:-$WHITE}"
     idx=$(( idx + 1 ))
-    if [ "$first" = true ]; then
-        [ "$USE_NERD" != true ] && icon=""
-        first=false
-    fi
-    out="${out:+$out }$(colorize "$color" "${icon:+$icon }$body")"
+    out="${out:+$out }$(colorize "$color" "$icon $body")"
 done
 echo "$out"

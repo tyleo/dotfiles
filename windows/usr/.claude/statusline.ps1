@@ -74,7 +74,7 @@ if ($USE_NERD) {
 
     # middle dot | U+00B7
     $ICON_DOT = [char]0x00B7
-    # every icon is the dot; the render loop drops it from the first segment
+    # every icon is the dot
     $ICON_DB = $ICON_DOT
     $ICON_BOLT = $ICON_DOT
     $ICON_BULB = $ICON_DOT
@@ -266,11 +266,8 @@ $weekly_pct = $data.rate_limits.seven_day.used_percentage
 $weekly_reset = $data.rate_limits.seven_day.resets_at
 $cwd = if ($data.workspace.current_dir) { $data.workspace.current_dir } else { $data.cwd }
 
-# The first segment drops its icon when $USE_NERD is $false, since the
-# fallback dot is really a separator.
 $parts = @()
 $idx = 0
-$first = $true
 foreach ($name in $SEGMENTS) {
     $icon = $null
     $body = ''
@@ -286,11 +283,6 @@ foreach ($name in $SEGMENTS) {
     if ($null -eq $icon) { continue }
     $color = if ($SEGMENT_COLORS[$idx]) { $SEGMENT_COLORS[$idx] } else { $WHITE }
     $idx++
-    if ($first) {
-        if (-not $USE_NERD) { $icon = '' }
-        $first = $false
-    }
-    $text = if ($icon) { "$icon $body" } else { $body }
-    $parts += Colorize $color $text
+    $parts += Colorize $color "$icon $body"
 }
 [Console]::Write(($parts -join ' '))
