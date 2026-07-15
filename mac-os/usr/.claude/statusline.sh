@@ -21,7 +21,6 @@ readonly INDIGO=$'\033[38;5;105m'
 readonly PURPLE=$'\033[38;5;141m'
 # bright-white
 readonly WHITE=$'\033[97m'
-# Reset code
 readonly RESET=$'\033[0m'
 
 ## Config
@@ -65,7 +64,7 @@ if [ "$USE_NERD" = true ]; then
     readonly ICON_BAR_LEFT_FULL=$(printf '\xee\xb8\x83')
     # center cell full | U+EE04
     readonly ICON_BAR_CENTER_FULL=$(printf '\xee\xb8\x84')
-    # right cap full | U+EE05 (kept for completeness; unused under current spec)
+    # right cap full | U+EE05; unused, kept for completeness
     readonly ICON_BAR_RIGHT_FULL=$(printf '\xee\xb8\x85')
 else
     ### Plain Unicode fallbacks
@@ -113,11 +112,9 @@ repeat() {
 ## Segment formatters
 
 # These return the segment body only; the render loop adds icon and color.
-# Formatters never return empty: missing data renders as ? placeholders
-# (??% / ??:?? in usage; 00% in context) so segments never pop in or out.
+# Formatters never return empty, so segments never pop in or out.
 
-# Context: 10-char bar + percentage; empty bar with 00% when missing, since
-# a missing value means a fresh session whose context really is empty.
+# Context: 10-char bar + percentage; missing means a fresh session, so 00%.
 # Arg: used_percentage (may be empty).
 format_context() {
     local pct_int filled center_filled center_empty left_cap right_cap bar pct_str
@@ -152,9 +149,8 @@ format_effort() {
 }
 
 # Weekly usage: 7-day usage percent with reset day (RFC 5545 code) and time,
-# 24-hour clock. Rate-limit data is absent until the first API response, so
-# missing values render as ?? placeholders instead of hiding the segment.
-# Args: weekly_pct weekly_reset_day_time.
+# 24-hour clock; ?? placeholders until the first API response delivers
+# rate-limit data. Args: weekly_pct weekly_reset_day_time.
 format_usage_weekly() {
     local w_pct="$1" w_day_time="$2"
     if [ -n "$w_pct" ]; then w_pct=$(printf '%02.0f' "$w_pct"); else w_pct="??"; fi
@@ -162,9 +158,8 @@ format_usage_weekly() {
     printf '%s' "${w_pct}% ${w_day_time}"
 }
 
-# Hourly usage: 5-hour usage percent with reset time, 24-hour clock.
-# Rate-limit data is absent until the first API response, so missing values
-# render as ?? placeholders instead of hiding the segment.
+# Hourly usage: 5-hour usage percent with reset time, 24-hour clock;
+# ?? placeholders until the first API response delivers rate-limit data.
 # Args: hourly_pct hourly_reset_time.
 format_usage_hourly() {
     local h_pct="$1" h_time="$2"
@@ -247,11 +242,11 @@ EOF
     printf '%s' "${branch}${status}"
 }
 
-## Main: parse JSON in one jq call, render configured segments in order, join with spaces
+## Main
 
 input=$(cat)
 
-# Extract every field we need in a single jq call (5 forks down to 1).
+# Extract every field we need in a single jq call.
 # Each value lands on its own line; we feed the output through a heredoc
 # so consecutive empty lines don't get collapsed (which IFS=$'\t' would do)
 # and so we don't depend on bash-only process substitution (settings.json

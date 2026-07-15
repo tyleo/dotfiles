@@ -23,7 +23,6 @@ $INDIGO = [char]27 + "[38;5;105m"
 $PURPLE = [char]27 + "[38;5;141m"
 # bright-white
 $WHITE = [char]27 + "[97m"
-# Reset code
 $RESET = [char]27 + "[0m"
 
 ## Config
@@ -67,7 +66,7 @@ if ($USE_NERD) {
     $ICON_BAR_LEFT_FULL = [char]0xEE03
     # center cell full | U+EE04
     $ICON_BAR_CENTER_FULL = [char]0xEE04
-    # right cap full | U+EE05 (kept for completeness; unused under current spec)
+    # right cap full | U+EE05; unused, kept for completeness
     $ICON_BAR_RIGHT_FULL = [char]0xEE05
 } else {
     ### Plain Unicode fallbacks
@@ -107,17 +106,15 @@ function Colorize($color, $text) {
 ## Segment formatters
 
 # These return the segment body only; the render loop adds icon and color.
-# Formatters never return empty: missing data renders as ? placeholders
-# (??% / ??:?? in usage; 00% in context) so segments never pop in or out.
+# Formatters never return empty, so segments never pop in or out.
 
-# Context: 10-char bar + percentage; empty bar with 00% when missing, since
-# a missing value means a fresh session whose context really is empty.
+# Context: 10-char bar + percentage; missing means a fresh session, so 00%.
 # Arg: used_percentage (may be $null).
 function Format-Context($pct) {
     $pct_int = if ($null -ne $pct) { [int][Math]::Round($pct) } else { 0 }
     $pct_str = "{0:D2}" -f $pct_int
     # 10 cells total (left cap + 8 center + right cap), each = 10%, floor mapping
-    # ([int] cast on a double uses banker's rounding, so use Math.Floor for true floor)
+    # [int] cast on a double uses banker's rounding, so use Math.Floor for a true floor
     $filled = [Math]::Min(10, [int][Math]::Floor($pct_int / 10))
     $left_cap = if ($filled -ge 1) { $ICON_BAR_LEFT_FULL } else { $ICON_BAR_LEFT_EMPTY }
     $right_cap = if ($filled -ge 10) { $ICON_BAR_RIGHT_FULL } else { $ICON_BAR_RIGHT_EMPTY }
@@ -145,9 +142,8 @@ function Format-Effort($level) {
 }
 
 # Weekly usage: 7-day usage percent with reset day (RFC 5545 code) and time,
-# 24-hour clock. Rate-limit data is absent until the first API response, so
-# missing values render as ?? placeholders instead of hiding the segment.
-# Args: weekly_pct weekly_reset_epoch.
+# 24-hour clock; ?? placeholders until the first API response delivers
+# rate-limit data. Args: weekly_pct weekly_reset_epoch.
 function Format-UsageWeekly($w_pct, $w_reset) {
     $w_pct_str = if ($null -ne $w_pct) { '{0:D2}' -f [int][Math]::Round($w_pct) } else { '??' }
     if ($null -ne $w_reset) {
@@ -162,9 +158,8 @@ function Format-UsageWeekly($w_pct, $w_reset) {
     return "$w_pct_str% $w_day $w_time"
 }
 
-# Hourly usage: 5-hour usage percent with reset time, 24-hour clock.
-# Rate-limit data is absent until the first API response, so missing values
-# render as ?? placeholders instead of hiding the segment.
+# Hourly usage: 5-hour usage percent with reset time, 24-hour clock;
+# ?? placeholders until the first API response delivers rate-limit data.
 # Args: hourly_pct hourly_reset_epoch.
 function Format-UsageHourly($h_pct, $h_reset) {
     $h_pct_str = if ($null -ne $h_pct) { '{0:D2}' -f [int][Math]::Round($h_pct) } else { '??' }
@@ -247,7 +242,7 @@ function Format-Git($cwd) {
     return "$branch$status"
 }
 
-## Main: parse JSON once, render configured segments in order, join with spaces
+## Main
 
 $input_json = [Console]::In.ReadToEnd()
 $data = $input_json | ConvertFrom-Json
