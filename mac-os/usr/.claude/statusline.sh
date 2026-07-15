@@ -1,11 +1,7 @@
 #!/bin/bash
 # Claude Code status line
-# Format: {db-icon} {context} {context-percent}% {bulb-icon} {model} {bolt-icon} {effort} {calendar-icon} {7d-usage}% {reset-day} {reset-hh:mm} {timer-icon} {5h-usage}% {reset-hh:mm} {folder-icon} {working-directory} {branch-icon} {branch-name}
-
-## Config
-
-# Nerd Font glyphs when true; middle-dot and shade fallbacks when false
-USE_NERD=true
+# Default format: {db-icon} {context} {context-percent}% {bulb-icon} {model} {bolt-icon} {effort} {calendar-icon} {7d-usage}% {reset-day} {reset-hh:mm} {timer-icon} {5h-usage}% {reset-hh:mm} {folder-icon} {working-directory} {branch-icon} {branch-name}
+# Segment order, visibility, and colors come from SEGMENTS and SEGMENT_COLORS
 
 ## Colors
 
@@ -23,8 +19,19 @@ readonly BLUE=$'\033[96m'
 readonly INDIGO=$'\033[38;5;105m'
 # 256-color medium-purple
 readonly PURPLE=$'\033[38;5;141m'
+# bright-white
+readonly WHITE=$'\033[97m'
 # Reset code
 readonly RESET=$'\033[0m'
+
+## Config
+
+# Nerd Font glyphs when true; middle-dot and shade fallbacks when false
+USE_NERD=true
+# Segments render in this order; remove entries to hide them
+SEGMENTS=(context model effort usage-weekly usage-hourly directory git)
+# Colors pair with SEGMENTS by position; extra entries are ignored, missing ones render white
+SEGMENT_COLORS=("$RED" "$ORANGE" "$YELLOW" "$GREEN" "$BLUE" "$INDIGO" "$PURPLE")
 
 ## Icons
 
@@ -65,8 +72,8 @@ else
 
     # middle dot | U+00B7
     readonly ICON_DOT=$(printf '\xc2\xb7')
-    # context has no icon; every other icon is the dot
-    readonly ICON_DB=""
+    # every icon is the dot; the render loop drops it from the first segment
+    readonly ICON_DB="$ICON_DOT"
     readonly ICON_BOLT="$ICON_DOT"
     readonly ICON_BULB="$ICON_DOT"
     readonly ICON_CALENDAR="$ICON_DOT"
@@ -105,9 +112,10 @@ repeat() {
 
 ## Segment formatters
 
-# These return empty string when the segment should be hidden
+# These return the segment body only; the render loop adds icon and color.
+# Empty string hides the segment.
 
-# Context: database icon + 10-char bar + percentage. Arg: used_percentage (may be empty).
+# Context: 10-char bar + percentage. Arg: used_percentage (may be empty).
 format_context() {
     local pct_int filled center_filled center_empty left_cap right_cap bar pct_str
     pct_int=$(printf '%.0f' "${1:-0}")
@@ -122,48 +130,48 @@ format_context() {
     center_empty=$(( 8 - center_filled ))
     bar="${left_cap}$(repeat "$ICON_BAR_CENTER_FULL" "$center_filled")$(repeat "$ICON_BAR_CENTER_EMPTY" "$center_empty")${right_cap}"
     pct_str=$(printf '%02d' "$pct_int")
-    colorize "$RED" "${ICON_DB:+${ICON_DB} }${bar} ${pct_str}%"
+    printf '%s' "${bar} ${pct_str}%"
 }
 
-# Model: lightbulb icon + display name with leading "Claude " and any trailing
-# parenthetical suffix (e.g. " (1M context)") stripped. Arg: display_name.
+# Model: display name with leading "Claude " and any trailing parenthetical
+# suffix (e.g. " (1M context)") stripped. Arg: display_name.
 format_model() {
     local display_name="$1"
     [ -z "$display_name" ] && return
     local short=${display_name#Claude }
     short=${short% (*}
-    colorize "$ORANGE" "${ICON_BULB} ${short}"
+    printf '%s' "$short"
 }
 
-# Effort: bolt + level. Only present when the model exposes reasoning. Arg: effort_level.
+# Effort: level. Only present when the model exposes reasoning. Arg: effort_level.
 format_effort() {
     [ -z "$1" ] && return
-    colorize "$YELLOW" "${ICON_BOLT} $1"
+    printf '%s' "$1"
 }
 
-# Weekly usage: calendar icon + 7-day usage percent with reset day (RFC 5545
-# code) and time, 24-hour clock. Args: weekly_pct weekly_reset_day_time.
+# Weekly usage: 7-day usage percent with reset day (RFC 5545 code) and time,
+# 24-hour clock. Args: weekly_pct weekly_reset_day_time.
 format_usage_weekly() {
     local w_pct="$1" w_day_time="$2"
     if [ -z "$w_pct" ] || [ -z "$w_day_time" ]; then
         return
     fi
     w_pct=$(printf '%02.0f' "$w_pct")
-    colorize "$GREEN" "${ICON_CALENDAR} ${w_pct}% ${w_day_time}"
+    printf '%s' "${w_pct}% ${w_day_time}"
 }
 
-# Hourly usage: timer icon + 5-hour usage percent with reset time, 24-hour
-# clock. Args: hourly_pct hourly_reset_time.
+# Hourly usage: 5-hour usage percent with reset time, 24-hour clock.
+# Args: hourly_pct hourly_reset_time.
 format_usage_hourly() {
     local h_pct="$1" h_time="$2"
     if [ -z "$h_pct" ] || [ -z "$h_time" ]; then
         return
     fi
     h_pct=$(printf '%02.0f' "$h_pct")
-    colorize "$BLUE" "${ICON_TIMER} ${h_pct}% ${h_time}"
+    printf '%s' "${h_pct}% ${h_time}"
 }
 
-# Directory: folder icon + cwd, with $HOME collapsed to ~. Arg: cwd.
+# Directory: cwd, with $HOME collapsed to ~. Arg: cwd.
 format_directory() {
     local cwd="$1" display_dir
     [ -z "$cwd" ] && return
@@ -172,10 +180,10 @@ format_directory() {
         "$HOME"/*) display_dir="~${cwd#$HOME}" ;;
         *) display_dir="$cwd" ;;
     esac
-    colorize "$INDIGO" "${ICON_FOLDER} ${display_dir}"
+    printf '%s' "$display_dir"
 }
 
-# Git: branch icon + branch (or short SHA on detached HEAD), plus posh-git-style
+# Git: branch (or short SHA on detached HEAD), plus posh-git-style
 # status counts. One `git status` fork covers branch + ahead/behind + file states;
 # stash count is read directly from the reflog file. Arg: cwd.
 format_git() {
@@ -233,10 +241,10 @@ EOF
 
     local status=""
     [ -n "$s" ] && status=" [${s% }]"
-    colorize "$PURPLE" "${ICON_BRANCH} ${branch}${status}"
+    printf '%s' "${branch}${status}"
 }
 
-## Main: parse JSON in one jq call, render segments in order, join with spaces
+## Main: parse JSON in one jq call, render configured segments in order, join with spaces
 
 input=$(cat)
 
@@ -276,15 +284,28 @@ $jq_out
 EOF
 cwd="${workspace_dir:-$fallback_cwd}"
 
-out=""
-for seg in "$(format_context "$ctx_pct")" \
-           "$(format_model "$model_display")" \
-           "$(format_effort "$effort_level")" \
-           "$(format_usage_weekly "$weekly_pct" "$weekly_reset_day_time")" \
-           "$(format_usage_hourly "$hourly_pct" "$hourly_reset_time")" \
-           "$(format_directory "$cwd")" \
-           "$(format_git "$cwd")"; do
-    [ -z "$seg" ] && continue
-    out="${out:+$out }$seg"
+# A segment hidden at runtime (empty body) still keeps its color slot; the
+# first rendered segment drops its icon when USE_NERD is false, since the
+# fallback dot is really a separator.
+out="" idx=0 first=true
+for name in "${SEGMENTS[@]}"; do
+    case "$name" in
+        context) icon="$ICON_DB" body=$(format_context "$ctx_pct") ;;
+        model) icon="$ICON_BULB" body=$(format_model "$model_display") ;;
+        effort) icon="$ICON_BOLT" body=$(format_effort "$effort_level") ;;
+        usage-weekly) icon="$ICON_CALENDAR" body=$(format_usage_weekly "$weekly_pct" "$weekly_reset_day_time") ;;
+        usage-hourly) icon="$ICON_TIMER" body=$(format_usage_hourly "$hourly_pct" "$hourly_reset_time") ;;
+        directory) icon="$ICON_FOLDER" body=$(format_directory "$cwd") ;;
+        git) icon="$ICON_BRANCH" body=$(format_git "$cwd") ;;
+        *) continue ;;
+    esac
+    color="${SEGMENT_COLORS[$idx]:-$WHITE}"
+    idx=$(( idx + 1 ))
+    [ -z "$body" ] && continue
+    if [ "$first" = true ]; then
+        [ "$USE_NERD" != true ] && icon=""
+        first=false
+    fi
+    out="${out:+$out }$(colorize "$color" "${icon:+$icon }$body")"
 done
 echo "$out"

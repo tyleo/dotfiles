@@ -1,13 +1,9 @@
 # Claude Code status line (Windows PowerShell)
-# Format: {db-icon} {context} {context-percent}% {bulb-icon} {model} {bolt-icon} {effort} {calendar-icon} {7d-usage}% {reset-day} {reset-hh:mm} {timer-icon} {5h-usage}% {reset-hh:mm} {folder-icon} {working-directory} {branch-icon} {branch-name}
+# Default format: {db-icon} {context} {context-percent}% {bulb-icon} {model} {bolt-icon} {effort} {calendar-icon} {7d-usage}% {reset-day} {reset-hh:mm} {timer-icon} {5h-usage}% {reset-hh:mm} {folder-icon} {working-directory} {branch-icon} {branch-name}
+# Segment order, visibility, and colors come from $SEGMENTS and $SEGMENT_COLORS
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
-
-## Config
-
-# Nerd Font glyphs when $true; middle-dot and shade fallbacks when $false
-$USE_NERD = $true
 
 ## Colors
 
@@ -25,8 +21,19 @@ $BLUE = [char]27 + "[96m"
 $INDIGO = [char]27 + "[38;5;105m"
 # 256-color medium-purple
 $PURPLE = [char]27 + "[38;5;141m"
+# bright-white
+$WHITE = [char]27 + "[97m"
 # Reset code
 $RESET = [char]27 + "[0m"
+
+## Config
+
+# Nerd Font glyphs when $true; middle-dot and shade fallbacks when $false
+$USE_NERD = $true
+# Segments render in this order; remove entries to hide them
+$SEGMENTS = @('context', 'model', 'effort', 'usage-weekly', 'usage-hourly', 'directory', 'git')
+# Colors pair with $SEGMENTS by position; extra entries are ignored, missing ones render white
+$SEGMENT_COLORS = @($RED, $ORANGE, $YELLOW, $GREEN, $BLUE, $INDIGO, $PURPLE)
 
 ## Icons
 
@@ -67,8 +74,8 @@ if ($USE_NERD) {
 
     # middle dot | U+00B7
     $ICON_DOT = [char]0x00B7
-    # context has no icon; every other icon is the dot
-    $ICON_DB = ''
+    # every icon is the dot; the render loop drops it from the first segment
+    $ICON_DB = $ICON_DOT
     $ICON_BOLT = $ICON_DOT
     $ICON_BULB = $ICON_DOT
     $ICON_CALENDAR = $ICON_DOT
@@ -99,9 +106,10 @@ function Colorize($color, $text) {
 
 ## Segment formatters
 
-# These return empty string when the segment should be hidden
+# These return the segment body only; the render loop adds icon and color.
+# Empty string hides the segment.
 
-# Context: database icon + 10-char bar + percentage. Arg: used_percentage (may be $null).
+# Context: 10-char bar + percentage. Arg: used_percentage (may be $null).
 function Format-Context($pct) {
     if ($null -eq $pct) { $pct = 0 }
     $pct_int = [int][Math]::Round($pct)
@@ -117,26 +125,25 @@ function Format-Context($pct) {
            ([string]$ICON_BAR_CENTER_EMPTY * $center_empty) +
            [string]$right_cap
     $pct_str = "{0:D2}" -f $pct_int
-    $icon_prefix = if ($ICON_DB) { "$ICON_DB " } else { '' }
-    return Colorize $RED "$icon_prefix$bar $pct_str%"
+    return "$bar $pct_str%"
 }
 
-# Model: lightbulb icon + display name with leading "Claude " and any trailing
-# parenthetical suffix (e.g. " (1M context)") stripped. Arg: display_name.
+# Model: display name with leading "Claude " and any trailing parenthetical
+# suffix (e.g. " (1M context)") stripped. Arg: display_name.
 function Format-Model($display_name) {
     if (-not $display_name) { return "" }
     $short_model = $display_name -replace '^Claude ', '' -replace ' \(.*\)$', ''
-    return Colorize $ORANGE "$ICON_BULB $short_model"
+    return $short_model
 }
 
-# Effort: bolt + level. Only present when the model exposes reasoning. Arg: effort_level.
+# Effort: level. Only present when the model exposes reasoning. Arg: effort_level.
 function Format-Effort($level) {
     if (-not $level) { return "" }
-    return Colorize $YELLOW "$ICON_BOLT $level"
+    return $level
 }
 
-# Weekly usage: calendar icon + 7-day usage percent with reset day (RFC 5545
-# code) and time, 24-hour clock. Args: weekly_pct weekly_reset_epoch.
+# Weekly usage: 7-day usage percent with reset day (RFC 5545 code) and time,
+# 24-hour clock. Args: weekly_pct weekly_reset_epoch.
 function Format-UsageWeekly($w_pct, $w_reset) {
     if ($null -eq $w_pct -or $null -eq $w_reset) { return "" }
     $inv = [System.Globalization.CultureInfo]::InvariantCulture
@@ -144,20 +151,20 @@ function Format-UsageWeekly($w_pct, $w_reset) {
     $w_local = [DateTimeOffset]::FromUnixTimeSeconds([long]$w_reset).ToLocalTime()
     $w_day = @('SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA')[[int]$w_local.DayOfWeek]
     $w_time = $w_local.ToString('HH:mm', $inv)
-    return Colorize $GREEN "$ICON_CALENDAR $w_pct_str% $w_day $w_time"
+    return "$w_pct_str% $w_day $w_time"
 }
 
-# Hourly usage: timer icon + 5-hour usage percent with reset time, 24-hour
-# clock. Args: hourly_pct hourly_reset_epoch.
+# Hourly usage: 5-hour usage percent with reset time, 24-hour clock.
+# Args: hourly_pct hourly_reset_epoch.
 function Format-UsageHourly($h_pct, $h_reset) {
     if ($null -eq $h_pct -or $null -eq $h_reset) { return "" }
     $inv = [System.Globalization.CultureInfo]::InvariantCulture
     $h_pct_str = '{0:D2}' -f [int][Math]::Round($h_pct)
     $h_time = [DateTimeOffset]::FromUnixTimeSeconds([long]$h_reset).ToLocalTime().ToString('HH:mm', $inv)
-    return Colorize $BLUE "$ICON_TIMER $h_pct_str% $h_time"
+    return "$h_pct_str% $h_time"
 }
 
-# Directory: folder icon + cwd, with $HOME collapsed to ~. Arg: cwd.
+# Directory: cwd, with $HOME collapsed to ~. Arg: cwd.
 function Format-Directory($cwd) {
     if (-not $cwd) { return "" }
     $home_dir = $env:USERPROFILE -replace '\\','/'
@@ -167,10 +174,10 @@ function Format-Directory($cwd) {
     } else {
         $display_dir = $display_cwd
     }
-    return Colorize $INDIGO "$ICON_FOLDER $display_dir"
+    return $display_dir
 }
 
-# Git: branch icon + branch (or short SHA on detached HEAD), plus posh-git-style
+# Git: branch (or short SHA on detached HEAD), plus posh-git-style
 # status counts. One `git status` call covers branch + ahead/behind + file states;
 # stash count is read directly from the reflog file. Arg: cwd.
 function Format-Git($cwd) {
@@ -225,10 +232,10 @@ function Format-Git($cwd) {
     if ($untracked -gt 0) { $s += "?$untracked " }
 
     $status = if ($s) { " [" + $s.TrimEnd() + "]" } else { "" }
-    return Colorize $PURPLE "$ICON_BRANCH $branch$status"
+    return "$branch$status"
 }
 
-## Main: parse JSON once, render segments in order, join with spaces
+## Main: parse JSON once, render configured segments in order, join with spaces
 
 $input_json = [Console]::In.ReadToEnd()
 $data = $input_json | ConvertFrom-Json
@@ -243,16 +250,33 @@ $weekly_pct = $data.rate_limits.seven_day.used_percentage
 $weekly_reset = $data.rate_limits.seven_day.resets_at
 $cwd = if ($data.workspace.current_dir) { $data.workspace.current_dir } else { $data.cwd }
 
+# A segment hidden at runtime (empty body) still keeps its color slot; the
+# first rendered segment drops its icon when $USE_NERD is $false, since the
+# fallback dot is really a separator.
 $parts = @()
-foreach ($seg in @(
-    (Format-Context $ctx_pct),
-    (Format-Model $model_display),
-    (Format-Effort $effort_level),
-    (Format-UsageWeekly $weekly_pct $weekly_reset),
-    (Format-UsageHourly $hourly_pct $hourly_reset),
-    (Format-Directory $cwd),
-    (Format-Git $cwd)
-)) {
-    if ($seg) { $parts += $seg }
+$idx = 0
+$first = $true
+foreach ($name in $SEGMENTS) {
+    $icon = $null
+    $body = ''
+    switch ($name) {
+        'context' { $icon = $ICON_DB; $body = Format-Context $ctx_pct }
+        'model' { $icon = $ICON_BULB; $body = Format-Model $model_display }
+        'effort' { $icon = $ICON_BOLT; $body = Format-Effort $effort_level }
+        'usage-weekly' { $icon = $ICON_CALENDAR; $body = Format-UsageWeekly $weekly_pct $weekly_reset }
+        'usage-hourly' { $icon = $ICON_TIMER; $body = Format-UsageHourly $hourly_pct $hourly_reset }
+        'directory' { $icon = $ICON_FOLDER; $body = Format-Directory $cwd }
+        'git' { $icon = $ICON_BRANCH; $body = Format-Git $cwd }
+    }
+    if ($null -eq $icon) { continue }
+    $color = if ($SEGMENT_COLORS[$idx]) { $SEGMENT_COLORS[$idx] } else { $WHITE }
+    $idx++
+    if (-not $body) { continue }
+    if ($first) {
+        if (-not $USE_NERD) { $icon = '' }
+        $first = $false
+    }
+    $text = if ($icon) { "$icon $body" } else { $body }
+    $parts += Colorize $color $text
 }
 [Console]::Write(($parts -join ' '))
