@@ -1,5 +1,5 @@
 # Claude Code status line (Windows PowerShell)
-# Format: {db-icon} {context} {context-percent}% {bulb-icon} {model} {bolt-icon} {effort} {folder-icon} {working-directory} {branch-icon} {branch-name}
+# Format: {db-icon} {context} {context-percent}% {bulb-icon} {model} {bolt-icon} {effort} {clock-icon} {5h-usage}% {reset-hh:mm} · {7d-usage}% {reset-day} {reset-hh:mm} {folder-icon} {working-directory} {branch-icon} {branch-name}
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding           = [System.Text.Encoding]::UTF8
@@ -31,6 +31,8 @@ $ICON_DB     = [char]0xF1C0
 $ICON_BOLT   = [char]0xF0E7
 # nf-md-lightbulb | U+F0335
 $ICON_BULB   = [char]::ConvertFromUtf32(0xF0335)
+# nf-md-clock | U+F0954
+$ICON_CLOCK  = [char]::ConvertFromUtf32(0xF0954)
 # nf-fa-folder | U+F07B
 $ICON_FOLDER = [char]0xF07B
 # nf-pl-branch | U+E0A0
@@ -95,6 +97,21 @@ function Format-Effort($level) {
     return Colorize $YELLOW "$ICON_BOLT $level"
 }
 
+# Usage: clock icon + 5-hour usage percent with reset time, then 7-day usage
+# percent with reset day (RFC 5545 code) and time, both 24-hour clock.
+# Args: hourly_pct hourly_reset_epoch weekly_pct weekly_reset_epoch.
+function Format-Usage($h_pct, $h_reset, $w_pct, $w_reset) {
+    if ($null -eq $h_pct -or $null -eq $h_reset -or $null -eq $w_pct -or $null -eq $w_reset) { return "" }
+    $inv       = [System.Globalization.CultureInfo]::InvariantCulture
+    $h_pct_int = [int][Math]::Round($h_pct)
+    $w_pct_int = [int][Math]::Round($w_pct)
+    $h_time    = [DateTimeOffset]::FromUnixTimeSeconds([long]$h_reset).ToLocalTime().ToString('HH:mm', $inv)
+    $w_local   = [DateTimeOffset]::FromUnixTimeSeconds([long]$w_reset).ToLocalTime()
+    $w_day     = @('SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA')[[int]$w_local.DayOfWeek]
+    $w_time    = $w_local.ToString('HH:mm', $inv)
+    return Colorize $GREEN "$ICON_CLOCK $h_pct_int% $h_time · $w_pct_int% $w_day $w_time"
+}
+
 # Directory: folder icon + cwd, with $HOME collapsed to ~. Arg: cwd.
 function Format-Directory($cwd) {
     if (-not $cwd) { return "" }
@@ -105,7 +122,7 @@ function Format-Directory($cwd) {
     } else {
         $display_dir = $display_cwd
     }
-    return Colorize $GREEN "$ICON_FOLDER $display_dir"
+    return Colorize $BLUE "$ICON_FOLDER $display_dir"
 }
 
 # Git: branch icon + branch (or short SHA on detached HEAD), plus posh-git-style
@@ -163,7 +180,7 @@ function Format-Git($cwd) {
     if ($untracked  -gt 0) { $s += "?$untracked " }
 
     $status = if ($s) { " [" + $s.TrimEnd() + "]" } else { "" }
-    return Colorize $BLUE "$ICON_BRANCH $branch$status"
+    return Colorize $PURPLE "$ICON_BRANCH $branch$status"
 }
 
 ## Main: parse JSON once, render segments in order, join with spaces
@@ -175,6 +192,10 @@ $data       = $input_json | ConvertFrom-Json
 $ctx_pct       = $data.context_window.used_percentage
 $model_display = $data.model.display_name
 $effort_level  = $data.effort.level
+$hourly_pct    = $data.rate_limits.five_hour.used_percentage
+$hourly_reset  = $data.rate_limits.five_hour.resets_at
+$weekly_pct    = $data.rate_limits.seven_day.used_percentage
+$weekly_reset  = $data.rate_limits.seven_day.resets_at
 $cwd           = if ($data.workspace.current_dir) { $data.workspace.current_dir } else { $data.cwd }
 
 $parts = @()
@@ -182,6 +203,7 @@ foreach ($seg in @(
     (Format-Context   $ctx_pct),
     (Format-Model     $model_display),
     (Format-Effort    $effort_level),
+    (Format-Usage     $hourly_pct $hourly_reset $weekly_pct $weekly_reset),
     (Format-Directory $cwd),
     (Format-Git       $cwd)
 )) {

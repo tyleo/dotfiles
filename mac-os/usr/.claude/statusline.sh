@@ -1,6 +1,6 @@
 #!/bin/bash
 # Claude Code status line
-# Format: {db-icon} {context} {context-percent}% {bulb-icon} {model} {bolt-icon} {effort} {folder-icon} {working-directory} {branch-icon} {branch-name}
+# Format: {db-icon} {context} {context-percent}% {bulb-icon} {model} {bolt-icon} {effort} {clock-icon} {5h-usage}% {reset-hh:mm} | {7d-usage}% {reset-day} {reset-hh:mm} {folder-icon} {working-directory} {branch-icon} {branch-name}
 
 ## Colors
 
@@ -29,6 +29,8 @@ readonly ICON_DB=$(printf '\xef\x87\x80')
 readonly ICON_BOLT=$(printf '\xef\x83\xa7')
 # nf-md-lightbulb | U+F0335
 readonly ICON_BULB=$(printf '\xf3\xb0\x8c\xb5')
+# nf-md-clock | U+F0954
+readonly ICON_CLOCK=$(printf '\xf3\xb0\xa5\x94')
 # nf-fa-folder | U+F07B
 readonly ICON_FOLDER=$(printf '\xef\x81\xbb')
 # nf-pl-branch | U+E0A0
@@ -102,6 +104,19 @@ format_effort() {
     colorize "$YELLOW" "${ICON_BOLT} $1"
 }
 
+# Usage: clock icon + 5-hour usage percent with reset time, then 7-day usage
+# percent with reset day (RFC 5545 code) and time, both 24-hour clock.
+# Args: hourly_pct hourly_reset_time weekly_pct weekly_reset_day_time.
+format_usage() {
+    local h_pct="$1" h_time="$2" w_pct="$3" w_day_time="$4"
+    if [ -z "$h_pct" ] || [ -z "$h_time" ] || [ -z "$w_pct" ] || [ -z "$w_day_time" ]; then
+        return
+    fi
+    h_pct=$(printf '%.0f' "$h_pct")
+    w_pct=$(printf '%.0f' "$w_pct")
+    colorize "$GREEN" "${ICON_CLOCK} ${h_pct}% ${h_time} · ${w_pct}% ${w_day_time}"
+}
+
 # Directory: folder icon + cwd, with $HOME collapsed to ~. Arg: cwd.
 format_directory() {
     local cwd="$1" display_dir
@@ -111,7 +126,7 @@ format_directory() {
         "$HOME"/*)  display_dir="~${cwd#$HOME}" ;;
         *)          display_dir="$cwd" ;;
     esac
-    colorize "$GREEN" "${ICON_FOLDER} ${display_dir}"
+    colorize "$BLUE" "${ICON_FOLDER} ${display_dir}"
 }
 
 # Git: branch icon + branch (or short SHA on detached HEAD), plus posh-git-style
@@ -172,7 +187,7 @@ EOF
 
     local status=""
     [ -n "$s" ] && status=" [${s% }]"
-    colorize "$BLUE" "${ICON_BRANCH} ${branch}${status}"
+    colorize "$PURPLE" "${ICON_BRANCH} ${branch}${status}"
 }
 
 ## Main: parse JSON in one jq call, render segments in order, join with spaces
@@ -185,16 +200,29 @@ input=$(cat)
 # and so we don't depend on bash-only process substitution (settings.json
 # may invoke this via /bin/sh, which disables `<( )` in POSIX mode).
 jq_out=$(echo "$input" | jq -r '
-    .context_window.used_percentage // "",
-    .model.display_name             // "",
-    .effort.level                   // "",
-    .workspace.current_dir          // "",
-    .cwd                            // ""
+    .context_window.used_percentage        // "",
+    .model.display_name                    // "",
+    .effort.level                          // "",
+    .rate_limits.five_hour.used_percentage // "",
+    (.rate_limits.five_hour.resets_at      // "" |
+        if . == "" then "" else strflocaltime("%H:%M") end),
+    .rate_limits.seven_day.used_percentage // "",
+    (.rate_limits.seven_day.resets_at      // "" |
+        if . == "" then "" else
+            ["MO", "TU", "WE", "TH", "FR", "SA", "SU"][(strflocaltime("%u") | tonumber) - 1]
+            + " " + strflocaltime("%H:%M")
+        end),
+    .workspace.current_dir                 // "",
+    .cwd                                   // ""
 ')
 {
     read -r ctx_pct
     read -r model_display
     read -r effort_level
+    read -r hourly_pct
+    read -r hourly_reset_time
+    read -r weekly_pct
+    read -r weekly_reset_day_time
     read -r workspace_dir
     read -r fallback_cwd
 } <<EOF
@@ -206,6 +234,7 @@ out=""
 for seg in "$(format_context   "$ctx_pct")" \
            "$(format_model     "$model_display")" \
            "$(format_effort    "$effort_level")" \
+           "$(format_usage     "$hourly_pct" "$hourly_reset_time" "$weekly_pct" "$weekly_reset_day_time")" \
            "$(format_directory "$cwd")" \
            "$(format_git       "$cwd")"; do
     [ -z "$seg" ] && continue
