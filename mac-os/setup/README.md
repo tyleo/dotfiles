@@ -37,7 +37,7 @@ mac-os/setup/internal/homebrew.sh # just sync the Brewfile
 | `apps-manual.sh`    | Prints reminders for apps it will not auto-install (bot-gated, paid, ambiguous) |
 | `apps-steam.sh`     | Prints reminders for apps installed through Steam (Aseprite, Resprite)          |
 | `cargo.sh`          | Rust toolchain (rustup) plus the listed cargo crates                            |
-| `cli.sh`            | Self-updating vendor CLIs over curl (Claude Code, herdr, Oh My Zsh, yt-dlp)     |
+| `cli.sh`            | Self-updating vendor CLIs (Claude Code, herdr + plugins, Oh My Zsh, yt-dlp)     |
 | `dotfiles.sh`       | Copies the tracked dotfiles into `$HOME` (shell rc, git, VS Code, Ghostty, ...) |
 | `homebrew.sh`       | Everything in the `Brewfile` (CLIs, casks, fonts)                               |
 | `node.sh`           | nvm + an LTS Node, with Corepack enabled                                        |
