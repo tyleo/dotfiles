@@ -1,0 +1,20 @@
+{
+  "presets": {
+    "desktop": {
+      "iconStyle": "icons",
+      "segments": ["long-context", "model", "effort", "usage-weekly", "usage-hourly", "directory", "git"],
+      "colors": ["red", "orange", "yellow", "green", "blue", "indigo", "purple"]
+    },
+    "mobile": {
+      "iconStyle": "dots-no-prefix",
+      "iconColor": "gray",
+      "segments": ["short-context", "model", "effort", "git"],
+      "colors": ["red", "orange", "yellow", "purple"]
+    },
+    "web": {
+      "iconStyle": "dots",
+      "segments": ["long-context-shaded", "model", "effort", "usage-weekly", "usage-hourly", "directory", "git"],
+      "colors": ["red", "orange", "yellow", "green", "blue", "indigo", "purple"]
+    }
+  }
+}

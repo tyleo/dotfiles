@@ -56,4 +56,29 @@ function reload-profile() {
     .$profile
 }
 
+# Switches the Claude Code statusline preset (e.g. set-claude mobile).
+function set-claude($preset) {
+    $settings_file = Join-Path $HOME ".claude/statusline-settings.json"
+    $state_file = Join-Path $HOME ".claude/statusline-state.json"
+
+    if (-not $preset) {
+        Write-Output "usage: set-claude <preset>"
+        return
+    }
+
+    try {
+        $presets = (Get-Content -Raw -LiteralPath $settings_file -ErrorAction Stop | ConvertFrom-Json).presets
+    } catch {
+        Write-Output "❌ Failed to read $settings_file"
+        return
+    }
+    if (-not $presets.$preset) {
+        Write-Output "❌ Unknown preset '$preset' (available: $(($presets.PSObject.Properties.Name | Sort-Object) -join ', '))"
+        return
+    }
+
+    @{ preset = $preset } | ConvertTo-Json | Set-Content -LiteralPath $state_file
+    Write-Output "✅ Claude statusline preset set to $preset"
+}
+
 # . "C:\Users\tyleo\.config\powershell\tyt-completions.ps1"

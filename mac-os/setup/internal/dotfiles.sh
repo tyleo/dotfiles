@@ -20,6 +20,9 @@ items=(
   "$REPO/shared/usr/.claude/skills/comment-cleanup/SKILL.md"
   "$HOME/.claude/skills/comment-cleanup/SKILL.md"
 
+  "$REPO/mac-os/usr/.claude/statusline-settings.json"
+  "$HOME/.claude/statusline-settings.json"
+
   "$REPO/mac-os/usr/.claude/statusline.sh"
   "$HOME/.claude/statusline.sh"
 

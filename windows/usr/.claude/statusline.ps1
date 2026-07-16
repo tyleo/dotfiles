@@ -1,6 +1,11 @@
 # Claude Code status line (Windows PowerShell)
-# Default format: {db-icon} {context} {context-percent}% {bulb-icon} {model} {bolt-icon} {effort} {calendar-icon} {7d-usage}% {reset-day} {reset-hh:mm} {timer-icon} {5h-usage}% {reset-hh:mm} {folder-icon} {working-directory} {branch-icon} {branch-name}
-# Segment order, visibility, and colors come from $SEGMENTS and $SEGMENT_COLORS
+# Presets come from statusline-settings.json; statusline-state.json selects
+# the active preset (desktop when missing). Per preset:
+#   iconStyle: icons (Nerd Font) | dots | dots-no-prefix (first icon hidden)
+#   iconColor: one color name for every icon; omit to match segment colors
+#   segments: long-context | long-context-shaded | short-context | model |
+#     effort | usage-weekly | usage-hourly | directory | git | git-no-status
+#   colors: pair with segments by position; missing entries render white
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
@@ -21,22 +26,48 @@ $BLUE = [char]27 + "[96m"
 $INDIGO = [char]27 + "[38;5;105m"
 # 256-color medium-purple
 $PURPLE = [char]27 + "[38;5;141m"
+# 256-color gray
+$GRAY = [char]27 + "[38;5;245m"
 # bright-white
 $WHITE = [char]27 + "[97m"
 $RESET = [char]27 + "[0m"
 
 ## Config
 
-# Nerd Font glyphs when $true; middle-dot and shade fallbacks when $false
-$USE_NERD = $true
-# Segments render in this order; remove entries to hide them
-$SEGMENTS = @('context', 'model', 'effort', 'usage-weekly', 'usage-hourly', 'directory', 'git')
-# Colors pair with $SEGMENTS by position; extra entries are ignored, missing ones render white
-$SEGMENT_COLORS = @($RED, $ORANGE, $YELLOW, $GREEN, $BLUE, $INDIGO, $PURPLE)
+$SETTINGS_FILE = Join-Path $HOME ".claude/statusline-settings.json"
+$STATE_FILE = Join-Path $HOME ".claude/statusline-state.json"
+
+# The state file exists so shell commands can retheme running sessions
+$preset = "desktop"
+try {
+    $state = Get-Content -Raw -LiteralPath $STATE_FILE -ErrorAction Stop | ConvertFrom-Json
+    if ($state.preset) { $preset = $state.preset }
+} catch {}
+
+# Unknown presets fall back to desktop
+$preset_cfg = $null
+try {
+    $settings = Get-Content -Raw -LiteralPath $SETTINGS_FILE -ErrorAction Stop | ConvertFrom-Json
+    $preset_cfg = if ($settings.presets.$preset) { $settings.presets.$preset } else { $settings.presets.desktop }
+} catch {}
+
+# Hardcoded desktop fallback so a missing or invalid settings file never
+# breaks the line
+if ($preset_cfg -and $preset_cfg.segments) {
+    $ICON_STYLE = if ($preset_cfg.iconStyle) { $preset_cfg.iconStyle } else { 'icons' }
+    $ICON_COLOR_NAME = if ($preset_cfg.iconColor) { $preset_cfg.iconColor } else { '' }
+    $SEGMENTS = @($preset_cfg.segments)
+    $SEGMENT_COLORS = @($preset_cfg.colors)
+} else {
+    $ICON_STYLE = 'icons'
+    $ICON_COLOR_NAME = ''
+    $SEGMENTS = @('long-context', 'model', 'effort', 'usage-weekly', 'usage-hourly', 'directory', 'git')
+    $SEGMENT_COLORS = @('red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'purple')
+}
 
 ## Icons
 
-if ($USE_NERD) {
+if ($ICON_STYLE -eq 'icons') {
     ### Nerd Font glyphs
 
     # nf-fa-database | U+F1C0
@@ -53,23 +84,8 @@ if ($USE_NERD) {
     $ICON_FOLDER = [char]0xF07B
     # nf-pl-branch | U+E0A0
     $ICON_BRANCH = [char]0xE0A0
-
-    ### Nerd Font progress-bar segments (Fira Code, U+EE00-U+EE05)
-
-    # left cap empty | U+EE00
-    $ICON_BAR_LEFT_EMPTY = [char]0xEE00
-    # center cell empty | U+EE01
-    $ICON_BAR_CENTER_EMPTY = [char]0xEE01
-    # right cap empty | U+EE02
-    $ICON_BAR_RIGHT_EMPTY = [char]0xEE02
-    # left cap full | U+EE03
-    $ICON_BAR_LEFT_FULL = [char]0xEE03
-    # center cell full | U+EE04
-    $ICON_BAR_CENTER_FULL = [char]0xEE04
-    # right cap full | U+EE05; unused, kept for completeness
-    $ICON_BAR_RIGHT_FULL = [char]0xEE05
 } else {
-    ### Plain Unicode fallbacks
+    ### Middle-dot fallback for the dots and dots-no-prefix styles
 
     # middle dot | U+00B7
     $ICON_DOT = [char]0x00B7
@@ -81,20 +97,32 @@ if ($USE_NERD) {
     $ICON_TIMER = $ICON_DOT
     $ICON_FOLDER = $ICON_DOT
     $ICON_BRANCH = $ICON_DOT
-
-    ### Shade progress-bar segments
-
-    # light shade | U+2591
-    $ICON_SHADE_LIGHT = [char]0x2591
-    # dark shade | U+2593
-    $ICON_SHADE_DARK = [char]0x2593
-    $ICON_BAR_LEFT_EMPTY = $ICON_SHADE_LIGHT
-    $ICON_BAR_CENTER_EMPTY = $ICON_SHADE_LIGHT
-    $ICON_BAR_RIGHT_EMPTY = $ICON_SHADE_LIGHT
-    $ICON_BAR_LEFT_FULL = $ICON_SHADE_DARK
-    $ICON_BAR_CENTER_FULL = $ICON_SHADE_DARK
-    $ICON_BAR_RIGHT_FULL = $ICON_SHADE_DARK
 }
+
+### Progress-bar glyphs; both sets stay defined because the context segment
+### variant picks the bar style, not the icon style
+
+### Nerd Font progress-bar segments (Fira Code, U+EE00-U+EE05)
+
+# left cap empty | U+EE00
+$ICON_BAR_LEFT_EMPTY = [char]0xEE00
+# center cell empty | U+EE01
+$ICON_BAR_CENTER_EMPTY = [char]0xEE01
+# right cap empty | U+EE02
+$ICON_BAR_RIGHT_EMPTY = [char]0xEE02
+# left cap full | U+EE03
+$ICON_BAR_LEFT_FULL = [char]0xEE03
+# center cell full | U+EE04
+$ICON_BAR_CENTER_FULL = [char]0xEE04
+# right cap full | U+EE05; unused, kept for completeness
+$ICON_BAR_RIGHT_FULL = [char]0xEE05
+
+### Shade progress-bar segments
+
+# light shade | U+2591
+$ICON_SHADE_LIGHT = [char]0x2591
+# dark shade | U+2593
+$ICON_SHADE_DARK = [char]0x2593
 
 ## Reusable functions
 
@@ -103,28 +131,66 @@ function Colorize($color, $text) {
     return "$color$text$RESET"
 }
 
+# Map a color name to its escape code; unknown or missing names render white.
+function Resolve-Color($name) {
+    switch ($name) {
+        'blue' { return $BLUE }
+        'gray' { return $GRAY }
+        'green' { return $GREEN }
+        'indigo' { return $INDIGO }
+        'orange' { return $ORANGE }
+        'purple' { return $PURPLE }
+        'red' { return $RED }
+        'white' { return $WHITE }
+        'yellow' { return $YELLOW }
+        default { return $WHITE }
+    }
+}
+
 ## Segment formatters
 
 # These return the segment body only; the render loop adds icon and color.
 # Formatters never return empty, so segments never pop in or out.
 
-# Context: 10-char bar + percentage; missing means a fresh session, so 00%.
-# Arg: used_percentage (may be $null).
-function Format-Context($pct) {
-    $pct_int = if ($null -ne $pct) { [int][Math]::Round($pct) } else { 0 }
-    $pct_str = "{0:D2}" -f $pct_int
-    # 10 cells total (left cap + 8 center + right cap), each = 10%, floor mapping
+# Build the 10-cell context bar (left cap + 8 center + right cap); each cell =
+# 10%, floor mapping. Args: pct_int, then the empty and full glyphs for the
+# left cap, center cells, and right cap.
+function Build-Bar($pct_int, $cap_l_empty, $cell_empty, $cap_r_empty, $cap_l_full, $cell_full, $cap_r_full) {
     # [int] cast on a double uses banker's rounding, so use Math.Floor for a true floor
     $filled = [Math]::Min(10, [int][Math]::Floor($pct_int / 10))
-    $left_cap = if ($filled -ge 1) { $ICON_BAR_LEFT_FULL } else { $ICON_BAR_LEFT_EMPTY }
-    $right_cap = if ($filled -ge 10) { $ICON_BAR_RIGHT_FULL } else { $ICON_BAR_RIGHT_EMPTY }
-    $center_filled = [Math]::Max(0, [Math]::Min(8, $filled - 1))
-    $center_empty = 8 - $center_filled
-    $bar = [string]$left_cap +
-           ([string]$ICON_BAR_CENTER_FULL * $center_filled) +
-           ([string]$ICON_BAR_CENTER_EMPTY * $center_empty) +
+    $left_cap = if ($filled -ge 1) { $cap_l_full } else { $cap_l_empty }
+    $right_cap = if ($filled -ge 10) { $cap_r_full } else { $cap_r_empty }
+    $cells_filled = [Math]::Max(0, [Math]::Min(8, $filled - 1))
+    $cells_empty = 8 - $cells_filled
+    return [string]$left_cap +
+           ([string]$cell_full * $cells_filled) +
+           ([string]$cell_empty * $cells_empty) +
            [string]$right_cap
+}
+
+# Context (long): Nerd Font bar + percentage; missing means a fresh session,
+# so 00%. Arg: used_percentage (may be $null).
+function Format-ContextLong($pct) {
+    $pct_int = if ($null -ne $pct) { [int][Math]::Round($pct) } else { 0 }
+    $pct_str = "{0:D2}" -f $pct_int
+    $bar = Build-Bar $pct_int $ICON_BAR_LEFT_EMPTY $ICON_BAR_CENTER_EMPTY $ICON_BAR_RIGHT_EMPTY $ICON_BAR_LEFT_FULL $ICON_BAR_CENTER_FULL $ICON_BAR_RIGHT_FULL
     return "$bar $pct_str%"
+}
+
+# Context (long, shaded): shade-block bar + percentage for fonts without the
+# Nerd bar glyphs. Arg: used_percentage (may be $null).
+function Format-ContextLongShaded($pct) {
+    $pct_int = if ($null -ne $pct) { [int][Math]::Round($pct) } else { 0 }
+    $pct_str = "{0:D2}" -f $pct_int
+    $bar = Build-Bar $pct_int $ICON_SHADE_LIGHT $ICON_SHADE_LIGHT $ICON_SHADE_LIGHT $ICON_SHADE_DARK $ICON_SHADE_DARK $ICON_SHADE_DARK
+    return "$bar $pct_str%"
+}
+
+# Context (short): percentage only. Arg: used_percentage (may be $null).
+function Format-ContextShort($pct) {
+    $pct_int = if ($null -ne $pct) { [int][Math]::Round($pct) } else { 0 }
+    $pct_str = "{0:D2}" -f $pct_int
+    return "$pct_str%"
 }
 
 # Model: display name with leading "Claude " and any trailing parenthetical
@@ -242,6 +308,19 @@ function Format-Git($cwd) {
     return "$branch$status"
 }
 
+# Git (no status): branch only, short SHA on detached HEAD; ? outside a git
+# repo. symbolic-ref also names unborn branches, which rev-parse cannot.
+# Arg: cwd.
+function Format-GitNoStatus($cwd) {
+    if (-not $cwd) { return "?" }
+    $ErrorActionPreference = 'SilentlyContinue'
+    $branch = & git -C "$cwd" --no-optional-locks symbolic-ref --short -q HEAD 2>$null
+    if (-not $branch) { $branch = & git -C "$cwd" --no-optional-locks rev-parse --short HEAD 2>$null }
+    $ErrorActionPreference = 'Continue'
+    if (-not $branch) { return "?" }
+    return "$branch"
+}
+
 ## Main
 
 $input_json = [Console]::In.ReadToEnd()
@@ -263,17 +342,28 @@ foreach ($name in $SEGMENTS) {
     $icon = $null
     $body = ''
     switch ($name) {
-        'context' { $icon = $ICON_DB; $body = Format-Context $ctx_pct }
+        'long-context' { $icon = $ICON_DB; $body = Format-ContextLong $ctx_pct }
+        'long-context-shaded' { $icon = $ICON_DB; $body = Format-ContextLongShaded $ctx_pct }
+        'short-context' { $icon = $ICON_DB; $body = Format-ContextShort $ctx_pct }
         'model' { $icon = $ICON_BULB; $body = Format-Model $model_display }
         'effort' { $icon = $ICON_BOLT; $body = Format-Effort $effort_level }
         'usage-weekly' { $icon = $ICON_CALENDAR; $body = Format-UsageWeekly $weekly_pct $weekly_reset }
         'usage-hourly' { $icon = $ICON_TIMER; $body = Format-UsageHourly $hourly_pct $hourly_reset }
         'directory' { $icon = $ICON_FOLDER; $body = Format-Directory $cwd }
         'git' { $icon = $ICON_BRANCH; $body = Format-Git $cwd }
+        'git-no-status' { $icon = $ICON_BRANCH; $body = Format-GitNoStatus $cwd }
     }
     if ($null -eq $icon) { continue }
-    $color = if ($SEGMENT_COLORS[$idx]) { $SEGMENT_COLORS[$idx] } else { $WHITE }
+    $color = Resolve-Color $SEGMENT_COLORS[$idx]
+    # dots-no-prefix hides the first icon; iconColor recolors icons only
+    if ($idx -eq 0 -and $ICON_STYLE -eq 'dots-no-prefix') {
+        $segment = Colorize $color $body
+    } elseif ($ICON_COLOR_NAME) {
+        $segment = (Colorize (Resolve-Color $ICON_COLOR_NAME) $icon) + ' ' + (Colorize $color $body)
+    } else {
+        $segment = Colorize $color "$icon $body"
+    }
     $idx++
-    $parts += Colorize $color "$icon $body"
+    $parts += $segment
 }
 [Console]::Write(($parts -join ' '))

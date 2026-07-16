@@ -255,6 +255,31 @@ cdg() {
   cd ~git
 }
 
+## claude
+
+# Switch the Claude Code statusline preset (e.g. set_claude mobile).
+set_claude() {
+  local preset="$1"
+  local settings=~/.claude/statusline-settings.json
+
+  if [[ -z "$preset" ]]; then
+    echo "usage: set_claude <preset>"
+    return 1
+  fi
+
+  if ! jq -e --arg preset "$preset" '.presets[$preset]' "$settings" > /dev/null 2>&1; then
+    echo "❌ Unknown preset '$preset' (available: $(jq -r '.presets | keys | join(", ")' "$settings" 2>/dev/null))"
+    return 1
+  fi
+
+  if jq -n --arg preset "$preset" '{preset: $preset}' > ~/.claude/statusline-state.json; then
+    echo "✅ Claude statusline preset set to $preset"
+  else
+    echo "❌ Failed to set Claude statusline preset"
+    return 1
+  fi
+}
+
 ## cwebp
 
 # Convert a single image file into WebP format, deleting the original file.
