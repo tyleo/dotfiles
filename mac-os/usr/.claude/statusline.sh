@@ -1,7 +1,8 @@
 #!/bin/bash
 # Claude Code status line
 # Presets come from statusline-settings.json; statusline-state.json selects
-# the active preset (desktop when missing). Per preset:
+# the active preset. No state file (or no matching preset) means no profile,
+# so nothing renders. Per preset:
 #   iconStyle: icons (Nerd Font) | dots | dots-no-prefix (first icon hidden)
 #   iconColor: one color name for every icon; omit to match segment colors
 #   segments: long-context | long-context-shaded | short-context | model |
@@ -32,17 +33,17 @@ readonly RESET=$'\033[0m'
 
 ## Config
 
-readonly SETTINGS_FILE="$HOME/.claude/statusline-settings.json"
-readonly STATE_FILE="$HOME/.claude/statusline-state.json"
+readonly ROOT="$HOME"
+readonly SETTINGS_FILE="$ROOT/.claude/statusline-settings.json"
+readonly STATE_FILE="$ROOT/.claude/statusline-state.json"
 
 # The state file exists so shell commands can retheme running sessions
 preset=$(jq -r '.preset // empty' "$STATE_FILE" 2>/dev/null)
-[ -z "$preset" ] && preset=desktop
+[ -z "$preset" ] && exit 0
 
-# One jq call emits iconStyle, iconColor, segments, and colors on four lines;
-# unknown presets fall back to desktop
+# One jq call emits iconStyle, iconColor, segments, and colors on four lines
 preset_cfg=$(jq -r --arg preset "$preset" '
-    (.presets[$preset] // .presets.desktop // {}) |
+    (.presets[$preset] // {}) |
     .iconStyle // "icons",
     .iconColor // "",
     (.segments // [] | join(" ")),
@@ -57,14 +58,8 @@ preset_cfg=$(jq -r --arg preset "$preset" '
 $preset_cfg
 EOF
 
-# Hardcoded desktop fallback so a missing or invalid settings file never
-# breaks the line
-if [ -z "$segments_line" ]; then
-    ICON_STYLE=icons
-    ICON_COLOR_NAME=""
-    segments_line="long-context model effort usage-weekly usage-hourly directory git"
-    colors_line="red orange yellow green blue indigo purple"
-fi
+# A preset without segments is no profile either
+[ -z "$segments_line" ] && exit 0
 read -ra SEGMENTS <<EOF
 $segments_line
 EOF

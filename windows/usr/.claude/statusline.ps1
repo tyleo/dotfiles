@@ -1,6 +1,7 @@
 # Claude Code status line (Windows PowerShell)
 # Presets come from statusline-settings.json; statusline-state.json selects
-# the active preset (desktop when missing). Per preset:
+# the active preset. No state file (or no matching preset) means no profile,
+# so nothing renders. Per preset:
 #   iconStyle: icons (Nerd Font) | dots | dots-no-prefix (first icon hidden)
 #   iconColor: one color name for every icon; omit to match segment colors
 #   segments: long-context | long-context-shaded | short-context | model |
@@ -34,36 +35,30 @@ $RESET = [char]27 + "[0m"
 
 ## Config
 
-$SETTINGS_FILE = Join-Path $HOME ".claude/statusline-settings.json"
-$STATE_FILE = Join-Path $HOME ".claude/statusline-state.json"
+$ROOT = $HOME
+$SETTINGS_FILE = Join-Path $ROOT ".claude/statusline-settings.json"
+$STATE_FILE = Join-Path $ROOT ".claude/statusline-state.json"
 
 # The state file exists so shell commands can retheme running sessions
-$preset = "desktop"
+$preset = $null
 try {
     $state = Get-Content -Raw -LiteralPath $STATE_FILE -ErrorAction Stop | ConvertFrom-Json
     if ($state.preset) { $preset = $state.preset }
 } catch {}
+if (-not $preset) { exit 0 }
 
-# Unknown presets fall back to desktop
 $preset_cfg = $null
 try {
     $settings = Get-Content -Raw -LiteralPath $SETTINGS_FILE -ErrorAction Stop | ConvertFrom-Json
-    $preset_cfg = if ($settings.presets.$preset) { $settings.presets.$preset } else { $settings.presets.desktop }
+    $preset_cfg = $settings.presets.$preset
 } catch {}
 
-# Hardcoded desktop fallback so a missing or invalid settings file never
-# breaks the line
-if ($preset_cfg -and $preset_cfg.segments) {
-    $ICON_STYLE = if ($preset_cfg.iconStyle) { $preset_cfg.iconStyle } else { 'icons' }
-    $ICON_COLOR_NAME = if ($preset_cfg.iconColor) { $preset_cfg.iconColor } else { '' }
-    $SEGMENTS = @($preset_cfg.segments)
-    $SEGMENT_COLORS = @($preset_cfg.colors)
-} else {
-    $ICON_STYLE = 'icons'
-    $ICON_COLOR_NAME = ''
-    $SEGMENTS = @('long-context', 'model', 'effort', 'usage-weekly', 'usage-hourly', 'directory', 'git')
-    $SEGMENT_COLORS = @('red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'purple')
-}
+# A preset without segments is no profile either
+if (-not ($preset_cfg -and $preset_cfg.segments)) { exit 0 }
+$ICON_STYLE = if ($preset_cfg.iconStyle) { $preset_cfg.iconStyle } else { 'icons' }
+$ICON_COLOR_NAME = if ($preset_cfg.iconColor) { $preset_cfg.iconColor } else { '' }
+$SEGMENTS = @($preset_cfg.segments)
+$SEGMENT_COLORS = @($preset_cfg.colors)
 
 ## Icons
 
