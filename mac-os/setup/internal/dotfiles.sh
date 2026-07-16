@@ -58,3 +58,7 @@ items=(
 )
 
 install_rows 2 install_dotfile "${items[@]}"
+
+# Runtime state: `set_claude` owns it after the first run, so seed only when
+# missing.
+seed_dotfile "$REPO/mac-os/usr/.claude/statusline-state.json" "$HOME/.claude/statusline-state.json"

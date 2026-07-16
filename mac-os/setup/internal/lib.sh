@@ -209,6 +209,21 @@ mas_install() {
   fi
 }
 
+# Copy a tracked default into place only when the destination is missing. For
+# runtime-state files: the repo seeds the first value and the machine owns
+# every change after that, so an existing file is never touched.
+#
+# Args:
+# $1 - path to the default inside the repo
+# $2 - path it seeds
+seed_dotfile() {
+  local src="$1" dest="$2"
+  if [ -f "$dest" ]; then
+    return
+  fi
+  install_dotfile "$src" "$dest"
+}
+
 # Help install an app we do not fully automate, unless it is already in
 # `/Applications`. If the URL is a direct installer file (.pkg/.dmg/.zip), grab
 # it into ~/Downloads so the user only has to open it; we stop short of running
