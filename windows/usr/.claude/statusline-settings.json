@@ -8,8 +8,8 @@
     "mobile": {
       "iconStyle": "dots-no-prefix",
       "iconColor": "gray",
-      "segments": ["short-context", "model", "effort", "directory", "git"],
-      "colors": ["red", "orange", "yellow", "green", "blue"]
+      "segments": ["short-context", "model", "effort", "git"],
+      "colors": ["red", "orange", "yellow", "green"]
     },
     "web": {
       "iconStyle": "dots",
