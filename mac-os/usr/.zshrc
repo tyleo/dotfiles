@@ -186,6 +186,27 @@ restore_key_repeat() {
   echo "✅ Restored press-and-hold. Log out and back in to apply"
 }
 
+# Map F18/F19 (Karabiner mouse buttons) to the Back/Forward menu items in all
+# apps. Registers as App Shortcuts in System Settings. F18 is \uf715 and F19
+# is \uf716 in the NSF18FunctionKey range.
+set_mouse_back_forward() {
+  if defaults write -g NSUserKeyEquivalents -dict-add "Back" $'\uf715' \
+    && defaults write -g NSUserKeyEquivalents -dict-add "Forward" $'\uf716'; then
+    echo "✅ F18/F19 mapped to Back/Forward. Restart apps to apply"
+  else
+    echo "❌ Failed to map F18/F19 to Back/Forward"
+    return 1
+  fi
+}
+
+# Remove the F18/F19 Back/Forward shortcuts, keeping other App Shortcuts.
+restore_mouse_back_forward() {
+  /usr/libexec/PlistBuddy -c "Delete :NSUserKeyEquivalents:Back" ~/Library/Preferences/.GlobalPreferences.plist 2>/dev/null
+  /usr/libexec/PlistBuddy -c "Delete :NSUserKeyEquivalents:Forward" ~/Library/Preferences/.GlobalPreferences.plist 2>/dev/null
+  killall cfprefsd
+  echo "✅ Removed F18/F19 Back/Forward shortcuts. Restart apps to apply"
+}
+
 # Make ForkLift the default app for opening folders.
 set_file_viewer_to_forklift() {
   if defaults write -g NSFileViewer -string com.binarynights.ForkLift \
