@@ -3,13 +3,10 @@
     "type": "command",
     "command": "~/.claude/file-suggestion.sh"
   },
+  "skipAutoPermissionPrompt": true,
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh"
   },
-  "enabledPlugins": {
-    "rust-analyzer-lsp@claude-plugins-official": true
-  },
-  "tui": "fullscreen",
-  "skipAutoPermissionPrompt": true
+  "tui": "fullscreen"
 }
