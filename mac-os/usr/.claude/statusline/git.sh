@@ -2,12 +2,11 @@
 
 # Statusline segment: git branch and status. Sourced by statusline.sh.
 
-# Pull the working directory out of the statusline JSON:
-# workspace.current_dir, or cwd when unset.
-git_segment_cwd() {
-    printf '%s' "$1" | jq -r '
+# workspace.current_dir, or cwd when unset
+format_git_filter() {
+    printf '%s' '
         .workspace.current_dir as $w |
-        if $w == null or $w == "" then .cwd // "" else $w end' 2>/dev/null
+        if $w == null or $w == "" then .cwd // "" else $w end'
 }
 
 # nf-pl-branch | U+E0A0
@@ -16,10 +15,9 @@ format_git_icon() { printf '\xee\x82\xa0'; }
 # Git: branch (or short SHA on detached HEAD), plus posh-git-style
 # status counts; ? outside a git repo. One `git status` fork covers branch +
 # ahead/behind + file states; stash count is read directly from the reflog
-# file. Arg: statusline JSON.
+# file. Arg: cwd.
 format_git() {
-    local cwd
-    cwd=$(git_segment_cwd "$1")
+    local cwd="$1"
     [ -z "$cwd" ] && { printf '?'; return; }
     local porcelain
     porcelain=$(git -C "$cwd" -c core.fsmonitor= --no-optional-locks status --porcelain=v2 --branch 2>/dev/null) || { printf '?'; return; }
@@ -76,15 +74,16 @@ EOF
     printf '%s' "${branch}${status}"
 }
 
+format_git_no_status_filter() { format_git_filter; }
+
 # nf-pl-branch | U+E0A0
 format_git_no_status_icon() { printf '\xee\x82\xa0'; }
 
 # Git (no status): branch only, short SHA on detached HEAD; ? outside a git
 # repo. symbolic-ref also names unborn branches, which rev-parse cannot.
-# Arg: statusline JSON.
+# Arg: cwd.
 format_git_no_status() {
-    local cwd
-    cwd=$(git_segment_cwd "$1")
+    local cwd="$1"
     [ -z "$cwd" ] && { printf '?'; return; }
     local branch
     branch=$(git -C "$cwd" --no-optional-locks symbolic-ref --short -q HEAD 2>/dev/null)

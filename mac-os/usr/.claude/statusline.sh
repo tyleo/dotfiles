@@ -7,8 +7,8 @@
 #     rewrites so shell commands can retheme running sessions
 #   colors: color name -> ANSI escape, the palette profiles reference by name
 #   segments: segment name -> { file, import }; sourcing statusline/<file>
-#     defines <import>, which formats the statusline JSON in $1 into the
-#     segment body, and <import>_icon, which prints the default icon
+#     defines the <import>, <import>_icon, and <import>_filter trio specced
+#     in statusline/README.md
 #   profiles.<name>.segments: segment names rendered in order
 #   profiles.<name>.colors: color names cycled across segments; omit to
 #     render everything white
@@ -26,6 +26,9 @@ readonly SEGMENTS_DIR="$ROOT/.claude/statusline"
 # bright-white fallback for unknown or missing color names
 readonly WHITE=$'\033[97m'
 readonly RESET=$'\033[0m'
+
+# Record separator closing each import's field group in the jq output
+readonly FIELD_SEP=$'\x1e'
 
 ## Reusable functions
 
@@ -119,7 +122,10 @@ EOF
 
 input=$(cat)
 
-out="" sourced=" " rendered=0 idx=0
+# Pass 1: source segment files and splice every import's filter into one jq
+# program, so the input JSON is parsed once no matter how many segments run
+IMPORTS=()
+program="" sourced=" " idx=0
 while [ "$idx" -lt "$seg_count" ]; do
     file="${SEG_FILES[$idx]}"
     import="${SEG_IMPORTS[$idx]}"
@@ -135,33 +141,59 @@ while [ "$idx" -lt "$seg_count" ]; do
             ;;
     esac
     command -v "$import" >/dev/null 2>&1 || continue
-    body=$("$import" "$input")
-
-    if [ "$icon_count" -gt 0 ]; then
-        icon="${PROFILE_ICONS[$(( rendered % icon_count ))]}"
-    elif command -v "${import}_icon" >/dev/null 2>&1; then
-        icon=$("${import}_icon")
+    if command -v "${import}_filter" >/dev/null 2>&1; then
+        filter=$("${import}_filter")
     else
-        icon=""
+        # No filter means the formatter renders from no fields
+        filter="empty"
     fi
-
-    color_name=""
-    [ "$color_count" -gt 0 ] && color_name="${PROFILE_COLORS[$(( rendered % color_count ))]}"
-    color=$(resolve_color "$color_name")
-
-    if [ -z "$icon" ]; then
-        segment=$(colorize "$color" "$body")
-    else
-        icon_color="$color"
-        [ "$icon_color_count" -gt 0 ] && icon_color=$(resolve_color "${PROFILE_ICON_COLORS[$(( rendered % icon_color_count ))]}")
-        # One escape pair when the colors match keeps the output compact
-        if [ "$icon_color" = "$color" ]; then
-            segment=$(colorize "$color" "$icon $body")
-        else
-            segment="$(colorize "$icon_color" "$icon") $(colorize "$color" "$body")"
-        fi
-    fi
-    rendered=$(( rendered + 1 ))
-    out="${out:+$out }${segment}"
+    program="${program}(${filter}), \"\\u001e\", "
+    IMPORTS+=("$import")
 done
+[ "${#IMPORTS[@]}" -gt 0 ] || { echo; exit 0; }
+
+# Pass 2: extract every field; a broken filter fails the whole program and
+# every formatter falls back to its no-argument placeholders
+fields=$(printf '%s' "$input" | jq -r "${program%, }" 2>/dev/null)
+
+# Pass 3: render; each read collects one import's fields up to its separator
+out="" rendered=0
+{
+    for import in "${IMPORTS[@]}"; do
+        args=()
+        while IFS= read -r line && [ "$line" != "$FIELD_SEP" ]; do
+            args+=("$line")
+        done
+        body=$("$import" "${args[@]}" < /dev/null)
+
+        if [ "$icon_count" -gt 0 ]; then
+            icon="${PROFILE_ICONS[$(( rendered % icon_count ))]}"
+        elif command -v "${import}_icon" >/dev/null 2>&1; then
+            icon=$("${import}_icon" < /dev/null)
+        else
+            icon=""
+        fi
+
+        color_name=""
+        [ "$color_count" -gt 0 ] && color_name="${PROFILE_COLORS[$(( rendered % color_count ))]}"
+        color=$(resolve_color "$color_name")
+
+        if [ -z "$icon" ]; then
+            segment=$(colorize "$color" "$body")
+        else
+            icon_color="$color"
+            [ "$icon_color_count" -gt 0 ] && icon_color=$(resolve_color "${PROFILE_ICON_COLORS[$(( rendered % icon_color_count ))]}")
+            # One escape pair when the colors match keeps the output compact
+            if [ "$icon_color" = "$color" ]; then
+                segment=$(colorize "$color" "$icon $body")
+            else
+                segment="$(colorize "$icon_color" "$icon") $(colorize "$color" "$body")"
+            fi
+        fi
+        rendered=$(( rendered + 1 ))
+        out="${out:+$out }${segment}"
+    done
+} <<EOF
+$fields
+EOF
 echo "$out"

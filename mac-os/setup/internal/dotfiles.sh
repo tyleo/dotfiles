@@ -23,6 +23,9 @@ items=(
   "$REPO/mac-os/usr/.claude/statusline.sh"
   "$HOME/.claude/statusline.sh"
 
+  "$REPO/mac-os/usr/.claude/statusline/README.md"
+  "$HOME/.claude/statusline/README.md"
+
   "$REPO/mac-os/usr/.claude/statusline/directory.sh"
   "$HOME/.claude/statusline/directory.sh"
 

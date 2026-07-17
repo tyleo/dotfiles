@@ -49,31 +49,28 @@ build_bar() {
     printf '%s%s%s%s' "$left_cap" "$(repeat "$cell_full" "$cells_filled")" "$(repeat "$cell_empty" "$cells_empty")" "$right_cap"
 }
 
-# Pull the used percentage out of the statusline JSON as a whole number;
-# missing means a fresh session, so 0.
-context_pct() {
-    local pct
-    pct=$(printf '%s' "$1" | jq -r '.context_window.used_percentage // 0' 2>/dev/null)
-    printf '%.0f' "${pct:-0}"
-}
+format_context_long_filter() { printf '%s' '.context_window.used_percentage // ""'; }
 
 # nf-fa-database | U+F1C0
 format_context_long_icon() { printf '\xef\x87\x80'; }
 
-# Context (long): Nerd Font bar + percentage. Arg: statusline JSON.
+# Context (long): Nerd Font bar + percentage; missing means a fresh session,
+# so 00%. Arg: used_percentage.
 format_context_long() {
     local pct_int
-    pct_int=$(context_pct "$1")
+    pct_int=$(printf '%.0f' "${1:-0}")
     printf '%s %02d%%' "$(build_bar "$pct_int" "$ICON_BAR_LEFT_EMPTY" "$ICON_BAR_CENTER_EMPTY" "$ICON_BAR_RIGHT_EMPTY" "$ICON_BAR_LEFT_FULL" "$ICON_BAR_CENTER_FULL" "$ICON_BAR_RIGHT_FULL")" "$pct_int"
 }
+
+format_context_long_shaded_filter() { format_context_long_filter; }
 
 # nf-fa-database | U+F1C0
 format_context_long_shaded_icon() { printf '\xef\x87\x80'; }
 
 # Context (long, shaded): shade-block bar + percentage for fonts without the
-# Nerd bar glyphs. Arg: statusline JSON.
+# Nerd bar glyphs. Arg: used_percentage.
 format_context_long_shaded() {
     local pct_int
-    pct_int=$(context_pct "$1")
+    pct_int=$(printf '%.0f' "${1:-0}")
     printf '%s %02d%%' "$(build_bar "$pct_int" "$ICON_SHADE_LIGHT" "$ICON_SHADE_LIGHT" "$ICON_SHADE_LIGHT" "$ICON_SHADE_DARK" "$ICON_SHADE_DARK" "$ICON_SHADE_DARK")" "$pct_int"
 }
