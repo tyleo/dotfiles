@@ -249,6 +249,28 @@ restore_finder_show_hidden_files() {
   echo "✅ Restored Finder to hiding hidden files"
 }
 
+# Keep the system awake on AC power so SSH stays reachable while plugged in.
+# The display still sleeps; battery behavior is unchanged; closing the lid
+# still sleeps unless in clamshell mode.
+set_no_sleep_on_ac() {
+  if sudo pmset -c sleep 0; then
+    echo "✅ System sleep disabled on AC power. SSH stays reachable while plugged in"
+  else
+    echo "❌ Failed to disable system sleep on AC power"
+    return 1
+  fi
+}
+
+# Restore default system sleep on AC power (1 minute after the display sleeps).
+restore_sleep_on_ac() {
+  if sudo pmset -c sleep 1; then
+    echo "✅ Restored system sleep on AC power"
+  else
+    echo "❌ Failed to restore system sleep on AC power"
+    return 1
+  fi
+}
+
 # Restart the display and brightness services to fix monitor glitches.
 reload_monitors() {
   if sudo killall -HUP corebrightnessd && sudo killall -HUP WindowServer; then
