@@ -1,10 +1,8 @@
 {
-  "autoUpdatesChannel": "latest",
   "skipAutoPermissionPrompt": true,
   "statusLine": {
     "type": "command",
     "command": "pwsh -NoProfile -NonInteractive -NoLogo -ExecutionPolicy Bypass -File ~/.claude/statusline.ps1"
   },
-  "theme": "dark",
   "tui": "fullscreen"
 }
