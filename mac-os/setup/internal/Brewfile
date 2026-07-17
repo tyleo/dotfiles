@@ -1,4 +1,7 @@
-# Homebrew formulae & casks. Installed by homebrew.sh.
+# Homebrew taps, formulae & casks. Installed by homebrew.sh.
+
+# Tap serving moshi-hook; homebrew.sh trusts it before this file installs
+tap "rjyo/moshi"
 
 # Clone of cat(1) with syntax highlighting and Git integration
 brew "bat"
@@ -30,6 +33,8 @@ brew "httrack"
 brew "imagemagick"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
+# Portable daemon + CLI that bridges AI coding agents to the Moshi mobile app
+brew "moshi-hook", start_service: true
 # Create, run, and share large language models (LLMs)
 brew "ollama"
 # Draw UML diagrams

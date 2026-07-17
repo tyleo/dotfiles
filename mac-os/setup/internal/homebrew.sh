@@ -10,4 +10,8 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 ensure_brew
 
+# Non-official taps must be trusted for brew to load their formulae when
+# HOMEBREW_REQUIRE_TAP_TRUST is set. There is no Brewfile entry for this.
+brew trust --tap rjyo/moshi
+
 brew bundle --file="$DIR/Brewfile"
