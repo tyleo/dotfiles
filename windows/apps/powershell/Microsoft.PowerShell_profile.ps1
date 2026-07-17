@@ -56,29 +56,29 @@ function reload-profile() {
     .$profile
 }
 
-# Switches the Claude Code statusline preset (e.g. set-claude mobile).
-function set-claude($preset) {
-    $settings_file = Join-Path $HOME ".claude/statusline-settings.json"
-    $state_file = Join-Path $HOME ".claude/statusline-state.json"
+# Switches the Claude Code statusline profile (e.g. set-claude mobile).
+function set-claude($profile_name) {
+    $config_file = Join-Path $HOME ".claude/statuslineconfig.json"
 
-    if (-not $preset) {
-        Write-Output "usage: set-claude <preset>"
+    if (-not $profile_name) {
+        Write-Output "usage: set-claude <profile>"
         return
     }
 
     try {
-        $presets = (Get-Content -Raw -LiteralPath $settings_file -ErrorAction Stop | ConvertFrom-Json).presets
+        $config = Get-Content -Raw -LiteralPath $config_file -ErrorAction Stop | ConvertFrom-Json
     } catch {
-        Write-Output "❌ Failed to read $settings_file"
+        Write-Output "❌ Failed to read $config_file"
         return
     }
-    if (-not $presets.$preset) {
-        Write-Output "❌ Unknown preset '$preset' (available: $(($presets.PSObject.Properties.Name | Sort-Object) -join ', '))"
+    if (-not $config.profiles.$profile_name) {
+        Write-Output "❌ Unknown profile '$profile_name' (available: $(($config.profiles.PSObject.Properties.Name | Sort-Object) -join ', '))"
         return
     }
 
-    @{ preset = $preset } | ConvertTo-Json | Set-Content -LiteralPath $state_file
-    Write-Output "✅ Claude statusline preset set to $preset"
+    $config | Add-Member -NotePropertyName profile -NotePropertyValue $profile_name -Force
+    $config | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $config_file
+    Write-Output "✅ Claude statusline profile set to $profile_name"
 }
 
 # . "C:\Users\tyleo\.config\powershell\tyt-completions.ps1"

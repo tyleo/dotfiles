@@ -300,25 +300,28 @@ cdg() {
 
 ## claude
 
-# Switch the Claude Code statusline preset (e.g. set_claude mobile).
+# Switch the Claude Code statusline profile (e.g. set_claude mobile).
 set_claude() {
-  local preset="$1"
-  local settings=~/.claude/statusline-settings.json
+  local profile="$1"
+  local config=~/.claude/statuslineconfig.json
 
-  if [[ -z "$preset" ]]; then
-    echo "usage: set_claude <preset>"
+  if [[ -z "$profile" ]]; then
+    echo "usage: set_claude <profile>"
     return 1
   fi
 
-  if ! jq -e --arg preset "$preset" '.presets[$preset]' "$settings" > /dev/null 2>&1; then
-    echo "❌ Unknown preset '$preset' (available: $(jq -r '.presets | keys | join(", ")' "$settings" 2>/dev/null))"
+  if ! jq -e --arg profile "$profile" '.profiles[$profile]' "$config" > /dev/null 2>&1; then
+    echo "❌ Unknown profile '$profile' (available: $(jq -r '.profiles | keys | join(", ")' "$config" 2>/dev/null))"
     return 1
   fi
 
-  if jq -n --arg preset "$preset" '{preset: $preset}' > ~/.claude/statusline-state.json; then
-    echo "✅ Claude statusline preset set to $preset"
+  local tmp
+  tmp=$(mktemp)
+  if jq --arg profile "$profile" '.profile = $profile' "$config" > "$tmp" && mv "$tmp" "$config"; then
+    echo "✅ Claude statusline profile set to $profile"
   else
-    echo "❌ Failed to set Claude statusline preset"
+    rm -f "$tmp"
+    echo "❌ Failed to set Claude statusline profile"
     return 1
   fi
 }

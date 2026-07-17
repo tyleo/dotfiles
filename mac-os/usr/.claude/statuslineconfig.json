@@ -1,0 +1,124 @@
+{
+  "profile": "desktop",
+  "colors": {
+    "red": "\u001b[38;5;203m",
+    "orange": "\u001b[38;5;214m",
+    "yellow": "\u001b[93m",
+    "green": "\u001b[92m",
+    "blue": "\u001b[96m",
+    "indigo": "\u001b[38;5;105m",
+    "purple": "\u001b[38;5;141m",
+    "gray": "\u001b[38;5;245m",
+    "white": "\u001b[97m"
+  },
+  "segments": {
+    "long-context": {
+      "file": "long-context.sh",
+      "import": "format_context_long"
+    },
+    "short-context": {
+      "file": "short-context.sh",
+      "import": "format_context_short"
+    },
+    "long-context-shaded": {
+      "file": "long-context.sh",
+      "import": "format_context_long_shaded"
+    },
+    "model": {
+      "file": "model.sh",
+      "import": "format_model"
+    },
+    "effort": {
+      "file": "effort.sh",
+      "import": "format_effort"
+    },
+    "usage-weekly": {
+      "file": "usage.sh",
+      "import": "format_usage_weekly"
+    },
+    "usage-hourly": {
+      "file": "usage.sh",
+      "import": "format_usage_hourly"
+    },
+    "directory": {
+      "file": "directory.sh",
+      "import": "format_directory"
+    },
+    "git": {
+      "file": "git.sh",
+      "import": "format_git"
+    },
+    "git-no-status": {
+      "file": "git.sh",
+      "import": "format_git_no_status"
+    }
+  },
+  "profiles": {
+    "desktop": {
+      "segments": [
+        "long-context",
+        "model",
+        "effort",
+        "usage-weekly",
+        "usage-hourly",
+        "directory",
+        "git"
+      ],
+      "colors": [
+        "red",
+        "orange",
+        "yellow",
+        "green",
+        "blue",
+        "indigo",
+        "purple"
+      ]
+    },
+    "mobile": {
+      "segments": [
+        "short-context",
+        "model",
+        "effort",
+        "git"
+      ],
+      "colors": [
+        "red",
+        "orange",
+        "yellow",
+        "green"
+      ],
+      "icons": [
+        "",
+        "·",
+        "·",
+        "·"
+      ],
+      "iconColors": [
+        "gray"
+      ]
+    },
+    "web": {
+      "segments": [
+        "long-context-shaded",
+        "model",
+        "effort",
+        "usage-weekly",
+        "usage-hourly",
+        "directory",
+        "git"
+      ],
+      "colors": [
+        "red",
+        "orange",
+        "yellow",
+        "green",
+        "blue",
+        "indigo",
+        "purple"
+      ],
+      "icons": [
+        "·"
+      ]
+    }
+  }
+}

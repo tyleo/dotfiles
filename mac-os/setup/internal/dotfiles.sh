@@ -20,11 +20,32 @@ items=(
   "$REPO/shared/usr/.claude/skills/comment-cleanup/SKILL.md"
   "$HOME/.claude/skills/comment-cleanup/SKILL.md"
 
-  "$REPO/mac-os/usr/.claude/statusline-settings.json"
-  "$HOME/.claude/statusline-settings.json"
-
   "$REPO/mac-os/usr/.claude/statusline.sh"
   "$HOME/.claude/statusline.sh"
+
+  "$REPO/mac-os/usr/.claude/statusline/directory.sh"
+  "$HOME/.claude/statusline/directory.sh"
+
+  "$REPO/mac-os/usr/.claude/statusline/effort.sh"
+  "$HOME/.claude/statusline/effort.sh"
+
+  "$REPO/mac-os/usr/.claude/statusline/git.sh"
+  "$HOME/.claude/statusline/git.sh"
+
+  "$REPO/mac-os/usr/.claude/statusline/long-context.sh"
+  "$HOME/.claude/statusline/long-context.sh"
+
+  "$REPO/mac-os/usr/.claude/statusline/model.sh"
+  "$HOME/.claude/statusline/model.sh"
+
+  "$REPO/mac-os/usr/.claude/statusline/short-context.sh"
+  "$HOME/.claude/statusline/short-context.sh"
+
+  "$REPO/mac-os/usr/.claude/statusline/usage.sh"
+  "$HOME/.claude/statusline/usage.sh"
+
+  "$REPO/mac-os/usr/.claude/statuslineconfig.json"
+  "$HOME/.claude/statuslineconfig.json"
 
   "$REPO/mac-os/usr/.config/ghostty/config"
   "$HOME/.config/ghostty/config"
@@ -58,7 +79,3 @@ items=(
 )
 
 install_rows 2 install_dotfile "${items[@]}"
-
-# Runtime state: `set_claude` owns it after the first run, so seed only when
-# missing.
-seed_dotfile "$REPO/mac-os/usr/.claude/statusline-state.json" "$HOME/.claude/statusline-state.json"
