@@ -1,0 +1,12 @@
+# Tracked codex statusline settings. setup/internal/codex.sh splices the
+# [tui] status_line below into ~/.codex/config.toml and leaves every other
+# key to codex.
+[tui]
+status_line = [
+    "context-used",
+    "model-with-reasoning",
+    "five-hour-limit",
+    "weekly-limit",
+    "current-dir",
+    "git-branch",
+]

@@ -34,6 +34,7 @@ steps=(
   default-apps.sh
   zsh-plugins.sh
   dotfiles.sh
+  codex.sh
   system-setup.sh
   bin-links.sh
 )
