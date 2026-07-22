@@ -3,6 +3,20 @@
     "type": "command",
     "command": "~/.claude/file-suggestion.sh"
   },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bash '/Users/tyleo/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ]
+  },
   "skipAutoPermissionPrompt": true,
   "statusLine": {
     "type": "command",
