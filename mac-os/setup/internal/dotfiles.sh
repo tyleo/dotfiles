@@ -14,9 +14,6 @@ items=(
   "$REPO/mac-os/usr/.claude/file-suggestion.sh"
   "$HOME/.claude/file-suggestion.sh"
 
-  "$REPO/mac-os/usr/.claude/settings.json"
-  "$HOME/.claude/settings.json"
-
   "$REPO/shared/usr/.claude/skills/comment-cleanup/SKILL.md"
   "$HOME/.claude/skills/comment-cleanup/SKILL.md"
 
@@ -82,3 +79,6 @@ items=(
 )
 
 install_rows 2 install_dotfile "${items[@]}"
+
+# Merged rather than copied, so machine-local keys survive the deploy.
+merge_json_dotfile "$REPO/mac-os/usr/.claude/settings.json" "$HOME/.claude/settings.json"

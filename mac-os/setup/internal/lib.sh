@@ -209,6 +209,44 @@ mas_install() {
   fi
 }
 
+# Deep-merge a tracked JSON dotfile into the live one instead of overwriting
+# it, so machine-local keys survive a deploy. Tracked keys win on conflict;
+# nested objects merge recursively, arrays and scalars replace whole. Writes
+# jq's sorted-key format so repeat runs are no-ops, and backs up a differing
+# live file to `<dest>.bak` first, like `install_dotfile`.
+#
+# Args:
+# $1 - path to the JSON dotfile inside the repo
+# $2 - path it deploys to
+merge_json_dotfile() {
+  local src="$1" dest="$2"
+  if [ ! -f "$src" ]; then
+    echo "ERROR: dotfile source missing: $src" >&2
+    return 1
+  fi
+  if [ ! -f "$dest" ]; then
+    install_dotfile "$src" "$dest"
+    return
+  fi
+  if ! jq empty "$dest" 2>/dev/null; then
+    echo "ERROR: $dest is not valid JSON; fix it and rerun" >&2
+    return 1
+  fi
+  local merged
+  if ! merged="$(jq -S -s '.[0] * .[1]' "$dest" "$src")"; then
+    echo "ERROR: could not merge $src into $dest" >&2
+    return 1
+  fi
+  if [ "$merged" = "$(cat "$dest")" ]; then
+    return
+  fi
+  cp "$dest" "$dest.bak"
+  echo "Backed up existing $dest to $dest.bak"
+  printf '%s\n' "$merged" >"$dest.tmp"
+  mv "$dest.tmp" "$dest"
+  echo "Merged $dest"
+}
+
 # Copy a tracked default into place only when the destination is missing. For
 # runtime-state files: the repo seeds the first value and the machine owns
 # every change after that, so an existing file is never touched.
