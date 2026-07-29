@@ -17,6 +17,11 @@ if ! command -v claude &>/dev/null; then
   curl -fsSL https://claude.ai/install.sh | bash
 fi
 
+# Codex - OpenAI's coding agent CLI.
+if ! command -v codex &>/dev/null; then
+  curl -fsSL https://chatgpt.com/codex/install.sh | sh
+fi
+
 # herdr - terminal multiplexer for coding agents. Installs to ~/.local/bin and
 # self-updates.
 if ! command -v herdr &>/dev/null; then
