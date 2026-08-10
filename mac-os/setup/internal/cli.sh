@@ -28,13 +28,6 @@ if ! command -v herdr &>/dev/null; then
   curl -fsSL https://herdr.dev/install.sh | sh
 fi
 
-# herdr plugins. The fresh install lands in ~/.local/bin, which may not be on
-# PATH in this shell, so call the binary by path.
-HERDR="$HOME/.local/bin/herdr"
-if ! "$HERDR" plugin list 2>/dev/null | grep -q herdr-file-viewer; then
-  "$HERDR" plugin install smarzban/herdr-file-viewer --yes
-fi
-
 # Oh My Zsh - zsh config framework. Unattended and `KEEP_ZSHRC=yes` so it never
 # clobbers a dotfiles-managed `~/.zshrc`. Run before your dotfiles write
 # `~/.zshrc`, or have `~/.zshrc` source `$ZSH/oh-my-zsh.sh`.
