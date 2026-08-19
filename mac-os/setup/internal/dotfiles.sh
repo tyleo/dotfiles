@@ -17,6 +17,9 @@ items=(
   "$REPO/shared/usr/.claude/skills/comment-cleanup/SKILL.md"
   "$HOME/.claude/skills/comment-cleanup/SKILL.md"
 
+  "$REPO/shared/usr/.claude/skills/prose-cleanup/SKILL.md"
+  "$HOME/.claude/skills/prose-cleanup/SKILL.md"
+
   "$REPO/mac-os/usr/.claude/statusline.sh"
   "$HOME/.claude/statusline.sh"
 
