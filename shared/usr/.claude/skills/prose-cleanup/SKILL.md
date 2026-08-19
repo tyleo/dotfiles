@@ -34,7 +34,7 @@ Only touch the named target; leave the rest alone. Example invocations:
 
 ## Voice
 
-Spend a word to save a reread. Don't trade one-pass parseability for density.
+Walk along with the reader. Too much at once overwhelms them; too little makes them read back. Spend a word to save a reread.
 
 1. **Make the concrete thing the subject.** Name the flag, function, or expression and show it instead of describing it. `The fix is a catch-all: app.get("*", notFound) claims whatever no route matched`, not `a final route that matches the complement of the registered paths`.
 2. **Repeat the noun.** As facts pile up, a pronoun makes the reader backtrack. "Errors use the byte offsets", not "errors use them".
@@ -42,3 +42,4 @@ Spend a word to save a reread. Don't trade one-pass parseability for density.
 4. **Keep the true actor.** "materials are declared by use" beats "materials declare by use" because materials don't declare anything. Swap "is" only for an everyday verb whose subject really acts.
 5. **Every clause gets its own verb.** No verbless mid-sentence insertions ("any expression, a defined name the simplest, and ..."). A preposition or a small word ("with", "can") is cheaper than a reread.
 6. **One claim per sentence, nothing extra.** Cut rationale tails the reader doesn't need ("because the spec forbids an empty one"), enumerations of what the next lines show anyway, metaphors, and inferential connectives. A why earns its place when it stops a wrong edit or a wrong reading.
+7. **Land the paragraph.** When the point really matters, end on a short sentence that states it. Most paragraphs just end. A closer that lands emphasis instead of content ("That decision changed everything.") is an LLM tell. Replace it with the fact it gestures at ("The tech then had something to serve."), or cut it.
