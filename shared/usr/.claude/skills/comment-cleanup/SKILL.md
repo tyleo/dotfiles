@@ -10,7 +10,7 @@ A manual style pass over the comments in a change. Apply the rules and edit the 
 
 ## Scope
 
-Only touch comments added or modified in the change; leave existing comments elsewhere alone unless asked. Never change code behavior. If a comment only restates the code, delete it rather than reword it. One exception: keep comment text that renders into output, such as generated CLI help or published API docs, even when it reads like a restatement.
+Only touch comments the change added or modified; leave the rest alone unless asked. Never change code behavior. If a comment only restates the code, delete it rather than reword it. One exception: keep comment text that renders into output, such as generated CLI help or published API docs, even when it reads like a restatement.
 
 ## Rules
 
@@ -25,7 +25,7 @@ Only touch comments added or modified in the change; leave existing comments els
    5. No redundant "own": write "the X's Y", never "the X's own Y". Keep "own" only where it marks a separate, dedicated thing
    6. No yoked clauses: two facts bolted together with "and" ("X declares its list, and `--flag` holds the rules"). Fold them into one claim or give each its own sentence. Coordination stays when both clauses carry one thought
    7. No "so" chains: sentence after sentence hinging on "X, so Y". Bind the reason in with "because", or give each fact its own sentence. One "so" in a stretch of prose is fine
-   8. No comma-hung tails: a clause dangling off a comma ("lists `face` first, since the flag order sets the numbers") binds into the sentence instead ("can set its face maps ahead by listing `face` first because the flag order sets the numbers"). Commas pile up fast and every one costs a beat
+   8. No comma-hung tails: a clause dangling off a comma ("lists `face` first, since the flag order sets the numbers") binds into the sentence instead ("lists `face` first because the flag order sets the numbers")
 5. **Ordered lists.** Break a long series of facts into a numbered list; items carry no terminal punctuation. Argument docs take this form. An entry earns its line by saying something the signature doesn't.
 6. **Periods over semicolons.** Split independent clauses into sentences. Readability beats terseness. An occasional semicolon is fine when the clauses are tightly paired; chains of them are not.
 
@@ -35,7 +35,7 @@ Rule 2 is the subtle one. Examples:
 2. `// Config holds the host, port, timeout, and retry count` -> `// Config for the upstream connection.`
 3. `// Status is one of Pending, Active, or Closed` -> `// Lifecycle state of an order.`, or delete.
 
-If deleting a comment loses nothing a reader couldn't recover from the code quickly, delete it.
+If a reader can quickly recover everything a comment says from the code, delete it.
 
 ## Voice
 
@@ -43,7 +43,7 @@ Spend a word to save a reread. Don't trade one-pass parseability for density.
 
 1. **Make the concrete thing the subject.** Name the flag, function, or expression and show it instead of describing it. `The fix is a catch-all: app.get("*", notFound) claims whatever no route matched`, not `a final route that matches the complement of the registered paths`.
 2. **Repeat the noun.** As facts pile up, a pronoun makes the reader backtrack. "Errors use the byte offsets", not "errors use them".
-3. **Narrate, don't legislate.** State the starting point, then what can happen, with "can" for options: `The pool starts with one idle connection. The first checkout takes it, and each further checkout opens another.` Not a timeless rule chain joined by "therefore".
+3. **Narrate, don't legislate.** State the starting point, then what can happen, with "can" for options: `The pool starts with one idle connection. The first checkout takes it, and each further checkout opens another.` Don't chain timeless rules with "therefore".
 4. **Keep the true actor.** "materials are declared by use" beats "materials declare by use" because materials don't declare anything. Swap "is" only for an everyday verb whose subject really acts.
-5. **Every clause gets its own verb.** No verbless mid-sentence insertions ("any expression, a defined name the simplest, and ..."). A preposition or a small word ("with", "can") is cheaper than the reread the compression costs.
+5. **Every clause gets its own verb.** No verbless mid-sentence insertions ("any expression, a defined name the simplest, and ..."). A preposition or a small word ("with", "can") is cheaper than a reread.
 6. **One claim per sentence, nothing extra.** Cut rationale tails the reader doesn't need ("because the spec forbids an empty one"), enumerations of what the next lines show anyway, metaphors, and inferential connectives. A why earns its place when it stops a wrong edit or a wrong reading.
