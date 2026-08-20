@@ -35,6 +35,12 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
   KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 fi
 
+# uv - Python package and project manager. Installs to ~/.local/bin and
+# self-updates via `uv self update`.
+if ! command -v uv &>/dev/null; then
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+fi
+
 # yt-dlp - audio/video downloader.
 if [ ! -x "$HOME/.local/bin/yt-dlp" ]; then
   mkdir -p "$HOME/.local/bin"
