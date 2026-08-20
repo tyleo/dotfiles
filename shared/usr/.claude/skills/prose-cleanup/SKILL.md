@@ -29,6 +29,7 @@ Only touch the named target; leave the rest alone. Example invocations:
    6. No yoked clauses: two facts bolted together with "and" ("X declares its list, and `--flag` holds the rules"). Fold them into one claim or give each its own sentence. Coordination stays when both clauses carry one thought
    7. No "so" chains: sentence after sentence hinging on "X, so Y". Bind the reason in with "because", or give each fact its own sentence. One "so" in a stretch of prose is fine
    8. No comma-hung tails: a clause dangling off a comma ("lists `face` first, since the flag order sets the numbers") binds into the sentence instead ("lists `face` first because the flag order sets the numbers")
+   9. No "spell" for representability ("JSON cannot spell NaN", "spells X as `null`"); state the plain fact ("JSON has no NaN", "writes X as `null`"). The literal sense stays ("spelled as an integer", `3` vs `3.0`)
 4. **Ordered lists.** Break a long series of facts into a numbered list; items carry no terminal punctuation.
 5. **Periods over semicolons.** Split independent clauses into sentences. Readability beats terseness. An occasional semicolon is fine when the clauses are tightly paired; chains of them are not.
 
