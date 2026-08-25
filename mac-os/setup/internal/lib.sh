@@ -193,6 +193,30 @@ link_app_bin() {
   echo "Linked $name -> $src"
 }
 
+# Point one directory path at another through a symlink, so both names serve
+# the same files. The target is written into the link verbatim, so passing a
+# relative path keeps the link working under a moved or bind-mounted `$HOME`.
+# Skips the link when it already points at the target and replaces a stale one.
+# A real directory in the way is left alone and reported, since overwriting it
+# would throw away whatever is inside.
+#
+# Args:
+# $1 - path the link points at, relative to the link's own directory
+# $2 - path of the link itself
+link_dir() {
+  local target="$1" link="$2"
+  if [ "$(readlink "$link")" = "$target" ]; then
+    return
+  fi
+  if [ -e "$link" ] && [ ! -L "$link" ]; then
+    echo "ERROR: $link exists and is not a symlink; move it aside and rerun" >&2
+    return 1
+  fi
+  mkdir -p "$(dirname "$link")" "$(dirname "$link")/$target"
+  ln -sfn "$target" "$link"
+  echo "Linked $link -> $target"
+}
+
 # Install a Mac App Store app by id, unless it is already installed. Requires
 # being signed in to the App Store with the app in your purchase history; `mas`
 # can no longer sign in from the CLI.

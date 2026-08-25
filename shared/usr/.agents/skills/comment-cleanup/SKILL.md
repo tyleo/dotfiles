@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Comment Cleanup
 
-A manual style pass over the comments in a change. Apply the rules in `~/.claude/skills/prose-cleanup/SKILL.md` plus the rules below. Edit the comments in place, like an auto-formatter; don't flag them for review.
+A manual style pass over the comments in a change. Apply the rules in `~/.agents/skills/prose-cleanup/SKILL.md` plus the rules below. Edit the comments in place, like an auto-formatter; don't flag them for review.
 
 ## Scope
 

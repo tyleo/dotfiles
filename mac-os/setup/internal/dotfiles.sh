@@ -11,14 +11,14 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(git -C "$DIR" rev-parse --show-toplevel)"
 
 items=(
+  "$REPO/shared/usr/.agents/skills/comment-cleanup/SKILL.md"
+  "$HOME/.agents/skills/comment-cleanup/SKILL.md"
+
+  "$REPO/shared/usr/.agents/skills/prose-cleanup/SKILL.md"
+  "$HOME/.agents/skills/prose-cleanup/SKILL.md"
+
   "$REPO/mac-os/usr/.claude/file-suggestion.sh"
   "$HOME/.claude/file-suggestion.sh"
-
-  "$REPO/shared/usr/.claude/skills/comment-cleanup/SKILL.md"
-  "$HOME/.claude/skills/comment-cleanup/SKILL.md"
-
-  "$REPO/shared/usr/.claude/skills/prose-cleanup/SKILL.md"
-  "$HOME/.claude/skills/prose-cleanup/SKILL.md"
 
   "$REPO/mac-os/usr/.claude/statusline.sh"
   "$HOME/.claude/statusline.sh"
@@ -82,6 +82,10 @@ items=(
 )
 
 install_rows 2 install_dotfile "${items[@]}"
+
+# The skills live in `~/.agents/skills`, the directory every agent shares, and
+# Claude Code reads them through this link.
+link_dir ../.agents/skills "$HOME/.claude/skills"
 
 # Merged rather than copied, so machine-local keys survive the deploy.
 merge_json_dotfile "$REPO/mac-os/usr/.claude/settings.json" "$HOME/.claude/settings.json"
