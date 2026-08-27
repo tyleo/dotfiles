@@ -14,6 +14,9 @@ items=(
   "$REPO/shared/usr/.agents/skills/comment-cleanup/SKILL.md"
   "$HOME/.agents/skills/comment-cleanup/SKILL.md"
 
+  "$REPO/shared/usr/.agents/skills/pr-walkthrough/SKILL.md"
+  "$HOME/.agents/skills/pr-walkthrough/SKILL.md"
+
   "$REPO/shared/usr/.agents/skills/prose-cleanup/SKILL.md"
   "$HOME/.agents/skills/prose-cleanup/SKILL.md"
 
