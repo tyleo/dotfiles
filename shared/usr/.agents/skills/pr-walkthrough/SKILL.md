@@ -1,11 +1,12 @@
 ---
 name: pr-walkthrough
 description: Teach a pull request in plain English with a detailed, code-backed walkthrough of every changed file. Use when someone wants to understand a PR, trace its behavior through the codebase, or review unfamiliar code.
+disable-model-invocation: true
 ---
 
 # PR Walkthrough
 
-Accept a full GitHub PR URL such as `https://github.com/Treehouse-Labs/trunk/pull/1025` or a bare PR number such as `1025`. Resolve a bare number in the current repository.
+Accept a full GitHub PR URL such as `https://github.com/{owner}/{repo}/pull/{number}` or a bare PR number. Resolve a bare number in the current repository.
 
 Read the PR with the user like two teammates looking through the code together.
 
