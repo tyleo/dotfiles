@@ -14,7 +14,7 @@ Read the PR with the user like two teammates looking through the code together.
 
 Start with the problem, the old behavior, and the new behavior. Name the main boundaries. Trace one representative request, event, or data object through the system before discussing individual files. Explain unfamiliar project terms when they first appear.
 
-Use `uvx termaid` when a small diagram explains file relationships, ownership, or control flow better than prose.
+Use `uvx termaid` when a small diagram explains file relationships, ownership, or control flow better than prose. Render diagrams with `uvx termaid` and paste the rendered output in a `text` code fence. Pass `--ascii` only when another instruction requires ASCII or the destination cannot render Unicode box-drawing characters. Never paste raw Mermaid source or use a `mermaid` code fence.
 
 ## Choose a teaching order
 
