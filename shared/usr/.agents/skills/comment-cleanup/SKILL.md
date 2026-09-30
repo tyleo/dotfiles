@@ -14,7 +14,7 @@ Only touch comments the change added or modified; leave the rest alone unless as
 
 ## Rules
 
-1. **Don't relist contents in a header.** A header comment on a method, struct, or enum that just relists its steps, fields, or variants adds nothing and rots as the code changes; delete it or keep only a non-obvious reason. Comments inside a body that describe what it does are fine.
+1. **Don't relist contents in a header.** A header comment on a method, struct, or enum that just relists its steps, fields, or variants adds nothing and rots as the code changes; delete it or keep only a non-obvious reason. A header that states what a function errors on is fine. Comments inside a body that describe what it does are fine.
 2. **Argument docs are ordered lists.** An entry earns its line by saying something the signature doesn't.
 
 Rule 1 is the subtle one. Examples:
