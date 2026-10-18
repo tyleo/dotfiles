@@ -21,6 +21,7 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 steps=(
   homebrew.sh
+  android.sh
   apps-app-store.sh
   apps-dmg.sh
   apps-manual.sh

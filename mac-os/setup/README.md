@@ -31,6 +31,7 @@ mac-os/setup/internal/homebrew.sh # just sync the Brewfile
 
 | Step                | Installs                                                                        |
 | ------------------- | ------------------------------------------------------------------------------- |
+| `android.sh`        | Android SDK `platform-tools` (`adb`) via Google's `android` CLI                 |
 | `apps-app-store.sh` | Mac App Store apps via `mas` (Xcode, Office, GarageBand, ...)                   |
 | `apps-dmg.sh`       | GUI apps shipped as `.dmg`, downloaded straight into `/Applications`            |
 | `apps-zip.sh`       | GUI apps shipped as `.zip`, downloaded straight into `/Applications`            |

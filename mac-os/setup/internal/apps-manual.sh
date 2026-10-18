@@ -25,6 +25,10 @@ items=(
   "Microsoft 365"
   "https://go.microsoft.com/fwlink/?linkid=525133"
 
+  # Download page shows Meta's SDK license first
+  "RenderDoc Meta Fork"
+  "https://developers.meta.com/horizon/downloads/package/renderdoc-meta-fork-for-mac-installer/"
+
   "Steam"
   "https://store.steampowered.com/about/"
 )

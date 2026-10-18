@@ -38,13 +38,14 @@ ensure_nvm() {
 
 # Download a macOS app shipped as a `.dmg` disk image and install it into
 # `/Applications`, unless it is already there: mount the image on a private
-# mountpoint, copy the `.app` out, then unmount. Apps installed this way keep
-# their own built-in updater (no Homebrew, nothing external tracking the
-# install).
+# mountpoint, copy the `.app` out, then unmount. A `.dmg` wrapped in a `.zip`
+# is unwrapped first. Apps installed this way keep their own built-in updater
+# (no Homebrew, nothing external tracking the install).
 #
 # Args:
 # $1 - app name as it appears in `/Applications`, without the `.app` suffix
-# $2 - URL serving a `.dmg` that contains the `.app` bundle
+# $2 - URL serving a `.dmg` with the `.app` bundle, optionally wrapped in a
+#      `.zip`
 install_app_dmg() {
   local name="$1" url="$2"
   local app="/Applications/$name.app"
@@ -53,11 +54,22 @@ install_app_dmg() {
   fi
 
   echo "Downloading $name..."
-  local tmp mnt
+  local tmp mnt dmg
   tmp="$(mktemp -d)"
   mnt="$(mktemp -d)"
-  curl -fsSL "$url" -o "$tmp/app.dmg"
-  hdiutil attach -nobrowse -quiet -mountpoint "$mnt" "$tmp/app.dmg"
+  dmg="$tmp/app.dmg"
+  curl -fsSL "$url" -o "$dmg"
+  # Zip archives start with the `PK` magic bytes.
+  if [ "$(head -c 2 "$dmg")" = "PK" ]; then
+    ditto -x -k "$dmg" "$tmp/unpacked"
+    dmg="$(find "$tmp/unpacked" -maxdepth 2 -name '*.dmg' -print -quit)"
+    if [ -z "$dmg" ]; then
+      echo "ERROR: no .dmg found in zip from $url" >&2
+      rm -rf "$tmp" "$mnt"
+      return 1
+    fi
+  fi
+  hdiutil attach -nobrowse -quiet -mountpoint "$mnt" "$dmg"
   cp -R "$mnt/$name.app" /Applications/
   hdiutil detach -quiet "$mnt"
   rm -rf "$tmp" "$mnt"

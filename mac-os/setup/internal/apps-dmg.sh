@@ -30,6 +30,10 @@ items=(
   "Luna Secondary"
   "https://downloads.astropad.com/luna-secondary/mac/latest"
 
+  # Pinned to 6.5.2 because Meta has no stable latest URL; the app self-updates
+  "Meta Quest Developer Hub"
+  "https://securecdn.oculus.com/binaries/download/?id=38519490620999565"
+
   "Obsidian"
   "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.12.7/Obsidian-1.12.7.dmg"
 
