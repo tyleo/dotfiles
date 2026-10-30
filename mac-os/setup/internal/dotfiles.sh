@@ -56,6 +56,15 @@ items=(
   "$REPO/mac-os/usr/.config/ghostty/config"
   "$HOME/.config/ghostty/config"
 
+  "$REPO/mac-os/usr/.config/herdr-app/mods/prefix/main.js"
+  "$HOME/.config/herdr-app/mods/prefix/main.js"
+
+  "$REPO/mac-os/usr/.config/herdr-app/mods/prefix/mod.json"
+  "$HOME/.config/herdr-app/mods/prefix/mod.json"
+
+  "$REPO/mac-os/usr/.config/herdr-app/themes/apple-system-colors.json"
+  "$HOME/.config/herdr-app/themes/apple-system-colors.json"
+
   "$REPO/mac-os/usr/.config/herdr/config.toml"
   "$HOME/.config/herdr/config.toml"
 
@@ -92,3 +101,5 @@ link_dir ../.agents/skills "$HOME/.claude/skills"
 
 # Merged rather than copied, so machine-local keys survive the deploy.
 merge_json_dotfile "$REPO/mac-os/usr/.claude/settings.json" "$HOME/.claude/settings.json"
+merge_json_dotfile "$REPO/mac-os/usr/.config/herdr-app/keys.json" "$HOME/.config/herdr-app/keys.json"
+merge_json_dotfile "$REPO/mac-os/usr/.config/herdr-app/settings.json" "$HOME/.config/herdr-app/settings.json"

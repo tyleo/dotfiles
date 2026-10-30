@@ -28,6 +28,13 @@ if ! command -v herdr &>/dev/null; then
   curl -fsSL https://herdr.dev/install.sh | sh
 fi
 
+# Herdr app, the desktop app for herdr. Installs Herdr.app to ~/Applications plus
+# `herdr-app` and `herdr-core` to ~/.local/bin. The app updates itself and
+# herdr-core.
+if [ ! -d "$HOME/Applications/Herdr.app" ]; then
+  curl -fsSL https://releases.herdr.dev/app/install.sh | sh
+fi
+
 # Oh My Zsh - zsh config framework. Unattended and `KEEP_ZSHRC=yes` so it never
 # clobbers a dotfiles-managed `~/.zshrc`. Run before your dotfiles write
 # `~/.zshrc`, or have `~/.zshrc` source `$ZSH/oh-my-zsh.sh`.

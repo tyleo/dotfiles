@@ -1,0 +1,23 @@
+{
+  "global": {
+    "ctrl-b": "mod.open:prefix"
+  },
+  "mod:prefix": {
+    "a": "prefix.git-pull",
+    "ctrl-1": "prefix.agent-1",
+    "ctrl-2": "prefix.agent-2",
+    "ctrl-3": "prefix.agent-3",
+    "ctrl-4": "prefix.agent-4",
+    "ctrl-5": "prefix.agent-5",
+    "ctrl-6": "prefix.agent-6",
+    "ctrl-7": "prefix.agent-7",
+    "ctrl-8": "prefix.agent-8",
+    "ctrl-9": "prefix.agent-9",
+    "d": "prefix.git-ddth",
+    "i": "prefix.code",
+    "o": "prefix.forklift",
+    "shift-z": "prefix.git-push-force",
+    "u": "prefix.git-ddtp",
+    "z": "prefix.git-push"
+  }
+}
