@@ -247,9 +247,12 @@ mas_install() {
 
 # Deep-merge a tracked JSON dotfile into the live one instead of overwriting
 # it, so machine-local keys survive a deploy. Tracked keys win on conflict;
-# nested objects merge recursively, arrays and scalars replace whole. Writes
-# jq's sorted-key format so repeat runs are no-ops, and backs up a differing
-# live file to `<dest>.bak` first, like `install_dotfile`.
+# nested objects merge recursively, arrays and scalars replace whole. Hook
+# arrays are the exception because other tools install hooks. A hook array
+# keeps the tracked entries first, then every live entry whose commands the
+# repo doesn't track.
+# Writes jq's sorted-key format so repeat runs are no-ops, and backs up a
+# differing live file to `<dest>.bak` first, like `install_dotfile`.
 #
 # Args:
 # $1 - path to the JSON dotfile inside the repo
@@ -269,7 +272,20 @@ merge_json_dotfile() {
     return 1
   fi
   local merged
-  if ! merged="$(jq -S -s '.[0] * .[1]' "$dest" "$src")"; then
+  if ! merged="$(jq -S -s '
+    .[0] as $live | .[1] as $src
+    | ($live * $src)
+    | if ($src.hooks | type) == "object" then
+        .hooks |= with_entries(
+          .key as $event
+          | [$src.hooks[$event][]?.hooks[]?.command] as $tracked
+          | .value = ($src.hooks[$event] // []) + [
+              $live.hooks[$event][]?
+              | select(all(.hooks[]?.command; IN($tracked[]) | not))
+            ]
+        )
+      else . end
+  ' "$dest" "$src")"; then
     echo "ERROR: could not merge $src into $dest" >&2
     return 1
   fi
