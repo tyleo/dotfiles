@@ -140,6 +140,9 @@ export NVM_DIR="$HOME/.nvm"
 ## `starship`
 eval "$(starship init zsh)"
 
+## `unity`
+[ -f ~/.unity/env ] && . ~/.unity/env
+
 # Setup Variables
 gitconfig=~/.gitconfig
 zshrc=~/.zshrc
