@@ -22,6 +22,11 @@ fi
 install_app_zip "Visual Studio Code" \
   "https://update.code.visualstudio.com/latest/darwin-universal/stable"
 
+# VS Code reads application-scoped settings only from the Default profile.
+# Default holds just those settings. The imported profile carries the rest.
+install_dotfile "$(dirname "$PROFILE")/default-settings.json" \
+  "$HOME/Library/Application Support/Code/User/settings.json"
+
 # Skip the nudge once a profile of this name exists. VS Code records imported
 # profiles by name in this internal file; a format change here at worst prints
 # the reminder again, which is harmless.
