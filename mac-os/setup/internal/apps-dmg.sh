@@ -34,6 +34,9 @@ items=(
   "Meta Quest Developer Hub"
   "https://securecdn.oculus.com/binaries/download/?id=38519490620999565"
 
+  "Notion"
+  "https://www.notion.com/desktop/mac-apple-silicon/download"
+
   "Obsidian"
   "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.12.7/Obsidian-1.12.7.dmg"
 
