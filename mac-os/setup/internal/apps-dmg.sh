@@ -19,7 +19,7 @@ items=(
   "https://download.mozilla.org/?product=firefox-latest-ssl&os=osx&lang=en-US"
 
   "Ghostty"
-  "https://release.files.ghostty.org/1.3.1/Ghostty.dmg"
+  "sparkle https://release.files.ghostty.org/appcast.xml"
 
   "Google Chrome"
   "https://dl.google.com/chrome/mac/universal/stable/GGRO/googlechrome.dmg"
@@ -30,21 +30,14 @@ items=(
   "Luna Secondary"
   "https://downloads.astropad.com/luna-secondary/mac/latest"
 
-  # Pinned to 6.5.2 because Meta has no stable latest URL; the app self-updates
-  "Meta Quest Developer Hub"
-  "https://securecdn.oculus.com/binaries/download/?id=38519490620999565"
-
   "Notion"
   "https://www.notion.com/desktop/mac-apple-silicon/download"
 
   "Obsidian"
-  "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.12.7/Obsidian-1.12.7.dmg"
+  "github obsidianmd/obsidian-releases ^Obsidian-[0-9.]+\.dmg$"
 
   "Rectangle Pro"
-  "https://rectangleapp.com/pro/downloads/Rectangle%20Pro%203.80.dmg"
-
-  "Signal"
-  "https://updates.signal.org/desktop/signal-desktop-mac-universal-8.16.0.dmg"
+  "sparkle https://rectangleapp.com/pro/downloads/updates.xml"
 
   "Spotify"
   "https://download.scdn.co/SpotifyARM64.dmg"
@@ -53,10 +46,10 @@ items=(
   "https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup-arm64.dmg"
 
   "VIA"
-  "https://github.com/the-via/releases/releases/download/v3.0.0/via-3.0.0-mac.dmg"
+  "github the-via/releases -mac\.dmg$"
 
   "VLC"
-  "https://get.videolan.org/vlc/last/macosx/vlc-3.0.23-arm64.dmg"
+  "sparkle https://update.videolan.org/vlc/sparkle/vlc-arm64.xml"
 )
 
 install_rows 2 install_app_dmg "${items[@]}"

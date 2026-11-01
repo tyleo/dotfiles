@@ -43,15 +43,16 @@ ensure_nvm() {
 # (no Homebrew, nothing external tracking the install).
 #
 # Args:
-# $1 - app name as it appears in `/Applications`, without the `.app` suffix
-# $2 - URL serving a `.dmg` with the `.app` bundle, optionally wrapped in a
-#      `.zip`
+# 1. `$1`: app name as it appears in `/Applications`, without the `.app` suffix
+# 2. `$2`: URL or `resolve_url` spec serving a `.dmg` with the `.app` bundle,
+#    optionally wrapped in a `.zip`
 install_app_dmg() {
-  local name="$1" url="$2"
+  local name="$1" url
   local app="/Applications/$name.app"
   if [ -d "$app" ]; then
     return
   fi
+  url="$(resolve_url "$2")" || return 1
 
   echo "Downloading $name..."
   local tmp mnt dmg
@@ -81,14 +82,16 @@ install_app_dmg() {
 # installed.
 #
 # Args:
-# $1 - app name as it appears in `/Applications`, without the `.app` suffix
-# $2 - URL serving a `.zip` that contains the `.app` bundle
+# 1. `$1`: app name as it appears in `/Applications`, without the `.app` suffix
+# 2. `$2`: URL or `resolve_url` spec serving a `.zip` that contains the `.app`
+#    bundle
 install_app_zip() {
-  local name="$1" url="$2"
+  local name="$1" url
   local app="/Applications/$name.app"
   if [ -d "$app" ]; then
     return
   fi
+  url="$(resolve_url "$2")" || return 1
 
   echo "Downloading $name..."
   local tmp found
@@ -132,20 +135,22 @@ install_dotfile() {
   echo "Installed $dest"
 }
 
-# Install a command-line tool from a vendor's signed `.pkg`, unless that exact
-# version is already on PATH. These tools do not self-update, so the version
-# passed here is the source of truth: bump it and the URL together and the next
-# run upgrades in place.
+# Install a command-line tool from a vendor's signed `.pkg`, unless the version
+# it ships is already on PATH. These tools do not self-update. Pointing `$3` at
+# the latest release makes every run upgrade in place.
 #
 # Args:
-# $1 - display name, for the status messages
-# $2 - command the package installs; `"$cmd --version"` is matched against `$3`
-# $3 - version string expected in `"$cmd --version"` output; skipped if it
-#      matches
-# $4 - URL serving the `.pkg`
+# 1. `$1`: display name, for the status messages
+# 2. `$2`: command the package installs. The install is skipped when
+#    `"$cmd --version"` contains the version
+# 3. `$3`: URL or `resolve_url` spec serving the `.pkg`. The first dotted
+#    number in its filename sets the version
 install_pkg() {
-  local name="$1" cmd="$2" version="$3" url="$4"
-  if command -v "$cmd" &>/dev/null && "$cmd" --version 2>/dev/null | grep -qF "$version"; then
+  local name="$1" cmd="$2" url version
+  url="$(resolve_url "$3")" || return 1
+  version="$(basename "$url" | grep -oE '[0-9]+(\.[0-9]+)+' | head -n 1)"
+  if [ -n "$version" ] && command -v "$cmd" &>/dev/null &&
+    "$cmd" --version 2>/dev/null | grep -qF "$version"; then
     return
   fi
 
@@ -297,6 +302,77 @@ merge_json_dotfile() {
   printf '%s\n' "$merged" >"$dest.tmp"
   mv "$dest.tmp" "$dest"
   echo "Merged $dest"
+}
+
+# Turn a download spec into a concrete URL. Specs let the lists track each
+# vendor's newest release without pinning a version. A plain `https://` URL
+# passes through unchanged. Any other spec has the form
+# `<kind> <feed> [<regex>]`:
+#   1. `electron <latest-mac.yml URL> <regex>` picks the matching file from an
+#      electron-builder update feed
+#   2. `github <owner/repo> <regex>` picks the matching asset of the latest
+#      GitHub release
+#   3. `sparkle <appcast URL>` picks the full download of the highest version
+#      on the default channel
+#
+# Args:
+# 1. `$1`: URL or spec
+resolve_url() {
+  local spec="$1" kind feed pattern url xsl
+  case "$spec" in
+  https://*)
+    printf '%s\n' "$spec"
+    return
+    ;;
+  esac
+  read -r kind feed pattern <<<"$spec"
+  case "$kind" in
+  electron)
+    url="$(curl -fsSL "$feed" | sed -n 's/^[ -]*url: *//p' | grep -E "$pattern" | head -n 1)"
+    # Feeds can list files relative to the feed URL.
+    case "$url" in
+    "" | http://* | https://*) ;;
+    *) url="${feed%/*}/$url" ;;
+    esac
+    url="${url// /%20}"
+    ;;
+  github)
+    url="$(curl -fsSL "https://api.github.com/repos/$feed/releases/latest" |
+      jq -r --arg re "$pattern" \
+        '[.assets[] | select(.name | test($re))][0].browser_download_url // empty')"
+    ;;
+  sparkle)
+    # Appcasts are not reliably ordered, so sort on each item's version.
+    # Matching only direct `enclosure` children skips the deltas under
+    # `sparkle:deltas`.
+    xsl="$(mktemp)"
+    cat >"$xsl" <<'EOF'
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output method="text"/>
+  <xsl:template match="/">
+    <xsl:for-each select="//item[enclosure][not(*[local-name()='channel'])]">
+      <xsl:value-of select="concat(*[local-name()='version'], enclosure/@*[local-name()='version'])"/>
+      <xsl:text>&#9;</xsl:text>
+      <xsl:value-of select="enclosure/@url"/>
+      <xsl:text>&#10;</xsl:text>
+    </xsl:for-each>
+  </xsl:template>
+</xsl:stylesheet>
+EOF
+    url="$(curl -fsSL "$feed" | xsltproc "$xsl" - | sort -V | tail -n 1 | cut -f 2)"
+    rm -f "$xsl"
+    ;;
+  *)
+    echo "ERROR: unknown download spec: $spec" >&2
+    return 1
+    ;;
+  esac
+  if [ -z "$url" ]; then
+    echo "ERROR: no download found for: $spec" >&2
+    return 1
+  fi
+  # Some feeds list plain-http links to hosts that also serve https.
+  printf '%s\n' "${url/#http:\/\//https://}"
 }
 
 # Copy a tracked default into place only when the destination is missing. For

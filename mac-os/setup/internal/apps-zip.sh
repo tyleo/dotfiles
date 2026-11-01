@@ -20,6 +20,14 @@ items=(
 
   "ForkLift"
   "https://download.binarynights.com/ForkLift/ForkLift4.zip"
+
+  # Meta's only Mac download is the updater's app zip
+  "Meta Quest Developer Hub"
+  "electron https://www.oculus.com/electron-updates/mqdh/latest-mac.yml \.zip$"
+
+  # Shipped as a zip because Signal has no arm64 dmg
+  "Signal"
+  "electron https://updates.signal.org/desktop/latest-mac.yml mac-arm64-.*\.zip$"
 )
 
 install_rows 2 install_app_zip "${items[@]}"
