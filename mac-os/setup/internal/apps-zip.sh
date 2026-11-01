@@ -18,6 +18,14 @@ items=(
   "Airfoil Satellite"
   "https://rogueamoeba.com/airfoil/satellite/mac/download/AirfoilSatelliteMac.zip"
 
+  # The combined ChatGPT and Codex app
+  "ChatGPT"
+  "sparkle https://persistent.oaistatic.com/codex-app-prod/appcast.xml"
+
+  # Runs as a trial until the CodeWeavers license is entered
+  "CrossOver"
+  "sparkle https://www.codeweavers.com/xml/versions/cxmac.xml"
+
   "ForkLift"
   "https://download.binarynights.com/ForkLift/ForkLift4.zip"
 

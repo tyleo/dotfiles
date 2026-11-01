@@ -1,8 +1,6 @@
 # Homebrew taps, formulae & casks. Installed by homebrew.sh.
 
 # Non-official taps; homebrew.sh trusts each before this file installs
-# Google's tap serving android-cli
-tap "android/tap"
 # Tap serving moshi-hook
 tap "rjyo/moshi"
 
@@ -16,6 +14,8 @@ brew "duti"
 brew "ffmpeg"
 # Command-line fuzzy finder written in Go
 brew "fzf"
+# Replace zsh completion selection menu with fzf
+brew "fzf-tab"
 # GitHub command-line tool
 brew "gh"
 # Distributed revision control system
@@ -52,33 +52,45 @@ brew "ripgrep"
 brew "starship"
 # Terminal image and video viewer
 brew "timg"
+# Extremely fast Python package installer and resolver, written in Rust
+brew "uv"
 # Web Assembly Binary Toolkit
 brew "wabt"
 # Image format providing lossless and lossy compression for web images
 brew "webp"
 # Utilities to create and convert Web Open Font File (WOFF) files
 brew "woff2"
+# Fish-like fast/unobtrusive autosuggestions for zsh
+brew "zsh-autosuggestions"
+# Fish shell like syntax highlighting for zsh
+brew "zsh-syntax-highlighting"
 
 # System-wide ad and tracker blocker (privileged pkg installer; self-updates)
 cask "adguard"
-# Google's Android developer CLI; `version :latest`, so brew upgrades it only
-# with --greedy
+# Google's Android developer CLI; no self-update, brew handles upgrades
 cask "android-cli"
-# Multi-track audio editor and recorder; no self-update, brew handles upgrades
+# Diff and merge tool; update check only notifies, brew handles upgrades
+cask "araxis-merge"
+# Multi-track audio editor and recorder; updater only downloads the installer,
+# brew handles upgrades
 cask "audacity"
 # 3D creation suite; no self-update, brew handles upgrades
 cask "blender"
-# Cross-platform Git credential storage for multiple hosting providers
+# Cross-platform Git credential storage for multiple hosting providers; no
+# self-update, brew handles upgrades
 cask "git-credential-manager"
 # Keyboard customizer (pkg installs a DriverKit extension;
 # also adds EventViewer)
 cask "karabiner-elements"
-# Free and open-source painting and sketching program
+# Free and open-source painting and sketching program; update check only
+# notifies, brew handles upgrades
 cask "krita"
 # Simple raster image editor; no self-update, brew handles upgrades
 cask "pinta"
-# Keyboard layout for programmers
+# Keyboard layout for programmers; no self-update, brew handles upgrades
 cask "programmer-dvorak"
+# Game store; the cask ships Valve's self-updating universal bootstrapper
+cask "steam"
 # Adoptium's JDK; unversioned because Gradle fetches the JDK each build pins
 cask "temurin"
 # Ubiquiti's network scanner; its pkg installs a privileged network helper

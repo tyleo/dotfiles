@@ -73,13 +73,22 @@ ZSH_THEME="robbyrussell"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
-  fzf-tab
   git
-  zsh-autosuggestions
-  zsh-syntax-highlighting
 )
 
 source $ZSH/oh-my-zsh.sh
+
+# Third-party plugins come from the Brewfile so `brew upgrade` updates them.
+# fzf-tab needs Oh My Zsh's compinit and must load before the widget-wrapping
+# plugins.
+for plugin in \
+  "$HOMEBREW_PREFIX/opt/fzf-tab/share/fzf-tab/fzf-tab.zsh" \
+  "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" \
+  "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+do
+  [ -f "$plugin" ] && source "$plugin"
+done
+unset plugin
 
 # User configuration
 

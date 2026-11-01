@@ -17,13 +17,14 @@ if ! command -v claude &>/dev/null; then
   curl -fsSL https://claude.ai/install.sh | bash
 fi
 
-# Codex - OpenAI's coding agent CLI.
+# Codex - OpenAI's coding agent CLI. `CODEX_NON_INTERACTIVE` declines the
+# installer's `/dev/tty` prompts so an unattended run never stalls.
 if ! command -v codex &>/dev/null; then
-  curl -fsSL https://chatgpt.com/codex/install.sh | sh
+  curl -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh
 fi
 
-# herdr - terminal multiplexer for coding agents. Installs to ~/.local/bin and
-# self-updates.
+# herdr - terminal multiplexer for coding agents. Installs to ~/.local/bin. It
+# reports new versions, and `herdr update` installs them.
 if ! command -v herdr &>/dev/null; then
   curl -fsSL https://herdr.dev/install.sh | sh
 fi
@@ -42,13 +43,8 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
   KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 fi
 
-# uv - Python package and project manager. Installs to ~/.local/bin and
-# self-updates via `uv self update`.
-if ! command -v uv &>/dev/null; then
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-fi
-
-# yt-dlp - audio/video downloader.
+# yt-dlp - audio/video downloader. Self-updates on each run via `--update` in
+# ~/.config/yt-dlp/config.
 if [ ! -x "$HOME/.local/bin/yt-dlp" ]; then
   mkdir -p "$HOME/.local/bin"
   curl -fsSL https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos -o "$HOME/.local/bin/yt-dlp"

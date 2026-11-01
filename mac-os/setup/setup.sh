@@ -7,13 +7,11 @@
 #   1. homebrew.sh runs first to install Homebrew plus every Brewfile package.
 #   2. default-apps.sh binds file types to apps, so it follows the app
 #      installers.
-#   3. zsh-plugins.sh clones the Oh My Zsh custom plugins, so it follows
-#      cli.sh's Oh My Zsh install.
-#   4. dotfiles.sh runs after the tool installers to lay the managed rc files
+#   3. dotfiles.sh runs after the tool installers to lay the managed rc files
 #      over whatever they appended.
-#   5. system-setup.sh applies macOS settings via the .zshrc setters. It reads
+#   4. system-setup.sh applies macOS settings via the .zshrc setters. It reads
 #      the repo copy, so it does not depend on dotfiles.sh.
-#   6. bin-links.sh runs last to link app CLIs into ~/.local/bin.
+#   5. bin-links.sh runs last to link app CLIs into ~/.local/bin.
 
 set -euo pipefail
 
@@ -33,7 +31,6 @@ steps=(
   pkg.sh
   vscode.sh
   default-apps.sh
-  zsh-plugins.sh
   dotfiles.sh
   codex.sh
   system-setup.sh

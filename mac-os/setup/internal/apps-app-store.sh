@@ -25,23 +25,11 @@ items=(
   "Amazon Kindle"
   302584613
 
-  "Combustion Inc."
-  1658858290
-
   "GarageBand"
   682658836
 
-  "Kirsch Automation"
-  1469943618
-
-  "Pixquare"
-  1659428179
-
   "TestFlight"
   899247664
-
-  "UniFi"
-  1057750338
 
   "Voxel Max"
   1442352186

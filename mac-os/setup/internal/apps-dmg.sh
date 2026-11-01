@@ -9,9 +9,6 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$DIR/lib.sh"
 
 items=(
-  "ChatGPT"
-  "https://persistent.oaistatic.com/sidekick/public/ChatGPT_Desktop_public_latest.dmg"
-
   "Discord"
   "https://discord.com/api/download?platform=osx"
 
@@ -44,9 +41,6 @@ items=(
 
   "Unity Hub"
   "https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup-arm64.dmg"
-
-  "VIA"
-  "github the-via/releases -mac\.dmg$"
 
   "VLC"
   "sparkle https://update.videolan.org/vlc/sparkle/vlc-arm64.xml"

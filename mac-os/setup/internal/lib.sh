@@ -141,16 +141,18 @@ install_dotfile() {
 #
 # Args:
 # 1. `$1`: display name, for the status messages
-# 2. `$2`: command the package installs. The install is skipped when
-#    `"$cmd --version"` contains the version
+# 2. `$2`: command the package installs. The install is skipped when the
+#    first version in `"$cmd --version"` equals the pkg version exactly
 # 3. `$3`: URL or `resolve_url` spec serving the `.pkg`. The first dotted
-#    number in its filename sets the version
+#    number in its filename sets the pkg version
 install_pkg() {
   local name="$1" cmd="$2" url version
   url="$(resolve_url "$3")" || return 1
-  version="$(basename "$url" | grep -oE '[0-9]+(\.[0-9]+)+' | head -n 1)"
+  version="$(basename "$url" | grep -oE '[0-9]+(\.[0-9]+)+' | head -n 1)" || true
+  # The prerelease suffix counts, so a stable release replaces a preview.
   if [ -n "$version" ] && command -v "$cmd" &>/dev/null &&
-    "$cmd" --version 2>/dev/null | grep -qF "$version"; then
+    [ "$("$cmd" --version 2>/dev/null |
+      grep -oE '[0-9]+(\.[0-9]+)+(-[0-9A-Za-z.]+)?' | head -n 1)" = "$version" ]; then
     return
   fi
 
@@ -236,14 +238,15 @@ link_dir() {
 
 # Install a Mac App Store app by id, unless it is already installed. Requires
 # being signed in to the App Store with the app in your purchase history; `mas`
-# can no longer sign in from the CLI.
+# can no longer sign in from the CLI. The bundle path is checked first because
+# Spotlight can index an app with id 0, like a TestFlight build.
 #
 # Args:
-# $1 - human-readable name, for the status messages
-# $2 - numeric App Store id
+# 1. `$1`: app name as it appears in `/Applications`, without the `.app` suffix
+# 2. `$2`: numeric App Store id
 mas_install() {
   local name="$1" id="$2"
-  if mas list | grep -q "^$id"; then
+  if [ -d "/Applications/$name.app" ] || mas list "$id" &>/dev/null; then
     echo "$name already installed."
   elif ! mas install "$id"; then
     echo "Could not install $name. Sign in to the App Store, then run: mas install $id" >&2

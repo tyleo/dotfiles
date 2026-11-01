@@ -32,13 +32,13 @@ mac-os/setup/internal/homebrew.sh # just sync the Brewfile
 | Step                | Installs                                                                        |
 | ------------------- | ------------------------------------------------------------------------------- |
 | `android.sh`        | Android SDK `platform-tools` (`adb`) via Google's `android` CLI                 |
-| `apps-app-store.sh` | Mac App Store apps via `mas` (Xcode, Office, GarageBand, ...)                   |
+| `apps-app-store.sh` | Mac App Store apps via `mas` (Xcode, GarageBand, TestFlight, ...)               |
 | `apps-dmg.sh`       | GUI apps shipped as `.dmg`, downloaded straight into `/Applications`            |
 | `apps-zip.sh`       | GUI apps shipped as `.zip`, downloaded straight into `/Applications`            |
-| `apps-manual.sh`    | Prints reminders for apps it will not auto-install (bot-gated, paid, ambiguous) |
+| `apps-manual.sh`    | Prints reminders for apps it will not auto-install (bot-gated, paid, iOS-only)  |
 | `apps-steam.sh`     | Prints reminders for apps installed through Steam (Aseprite, Resprite)          |
 | `cargo.sh`          | Rust toolchain (rustup) plus the listed cargo crates                            |
-| `cli.sh`            | Self-updating vendor tools (Claude Code, Codex, herdr, Herdr app, uv, ...)      |
+| `cli.sh`            | Vendor install scripts (Claude Code, Codex, herdr, Herdr app, yt-dlp, ...)      |
 | `dotfiles.sh`       | Copies the tracked dotfiles into `$HOME` (shell rc, git, VS Code, Ghostty, ...) |
 | `homebrew.sh`       | Everything in the `Brewfile` (CLIs, casks, fonts)                               |
 | `node.sh`           | nvm + an LTS Node, with Corepack enabled                                        |
