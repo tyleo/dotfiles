@@ -75,6 +75,8 @@ cask "git-credential-manager"
 cask "karabiner-elements"
 # Free and open-source painting and sketching program
 cask "krita"
+# Simple raster image editor; no self-update, brew handles upgrades
+cask "pinta"
 # Keyboard layout for programmers
 cask "programmer-dvorak"
 # Adoptium's JDK; unversioned because Gradle fetches the JDK each build pins
