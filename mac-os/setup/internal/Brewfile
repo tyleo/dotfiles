@@ -93,8 +93,6 @@ cask "programmer-dvorak"
 cask "steam"
 # Adoptium's JDK; unversioned because Gradle fetches the JDK each build pins
 cask "temurin"
-# Ubiquiti's network scanner; its pkg installs a privileged network helper
-cask "wifiman"
 
 cask "font-fira-code"
 cask "font-fira-code-nerd-font"

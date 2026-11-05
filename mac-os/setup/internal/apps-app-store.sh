@@ -34,6 +34,9 @@ items=(
   "Voxel Max"
   1442352186
 
+  "WiFiman"
+  1385561119
+
   "Xcode"
   497799835
 )
