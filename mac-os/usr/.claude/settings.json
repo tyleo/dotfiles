@@ -27,5 +27,6 @@
     "command": "~/.claude/statusline.sh",
     "type": "command"
   },
-  "tui": "fullscreen"
+  "tui": "fullscreen",
+  "viewMode": "focus"
 }
