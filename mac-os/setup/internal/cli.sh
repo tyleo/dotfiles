@@ -29,6 +29,11 @@ if ! command -v herdr &>/dev/null; then
   curl -fsSL https://herdr.dev/install.sh | sh
 fi
 
+# herdr's agent hooks, since the tracked Claude settings call its hook script.
+for agent in claude codex; do
+  "$HOME/.local/bin/herdr" integration install "$agent"
+done
+
 # Herdr app, the desktop app for herdr. Installs Herdr.app to ~/Applications plus
 # `herdr-app` and `herdr-core` to ~/.local/bin. The app updates itself and
 # herdr-core.

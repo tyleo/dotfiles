@@ -9,9 +9,11 @@
 #      installers.
 #   3. dotfiles.sh runs after the tool installers to lay the managed rc files
 #      over whatever they appended.
-#   4. system-setup.sh applies macOS settings via the .zshrc setters. It reads
+#   4. moshi.sh follows dotfiles.sh, which must link ~/.claude/skills before
+#      Moshi writes a skill there.
+#   5. system-setup.sh applies macOS settings via the .zshrc setters. It reads
 #      the repo copy, so it does not depend on dotfiles.sh.
-#   5. bin-links.sh runs last to link app CLIs into ~/.local/bin.
+#   6. bin-links.sh runs last to link app CLIs into ~/.local/bin.
 
 set -euo pipefail
 
