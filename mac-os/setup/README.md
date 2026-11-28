@@ -41,6 +41,7 @@ mac-os/setup/internal/homebrew.sh # just sync the Brewfile
 | `cli.sh`            | Vendor install scripts (Claude Code, Codex, herdr, Herdr app, yt-dlp, ...)      |
 | `dotfiles.sh`       | Copies the tracked dotfiles into `$HOME` (shell rc, git, VS Code, Ghostty, ...) |
 | `homebrew.sh`       | Everything in the `Brewfile` (CLIs, casks, fonts)                               |
+| `moshi.sh`          | Moshi hooks for Claude Code and Codex, plus a reminder to pair this Mac         |
 | `node.sh`           | nvm + an LTS Node, with Corepack enabled                                        |
 | `pkg.sh`            | CLI tools from a vendor's signed `.pkg` (PowerShell)                            |
 | `vscode.sh`         | The listed VS Code extensions                                                   |

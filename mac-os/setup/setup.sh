@@ -33,6 +33,7 @@ steps=(
   default-apps.sh
   dotfiles.sh
   codex.sh
+  moshi.sh
   system-setup.sh
   bin-links.sh
 )
