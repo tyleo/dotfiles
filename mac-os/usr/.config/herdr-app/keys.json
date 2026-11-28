@@ -4,6 +4,7 @@
   },
   "mod:prefix": {
     "a": "prefix.git-pull",
+    "c": "prefix.chat",
     "ctrl-1": "prefix.agent-1",
     "ctrl-2": "prefix.agent-2",
     "ctrl-3": "prefix.agent-3",

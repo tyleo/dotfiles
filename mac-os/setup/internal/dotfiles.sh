@@ -56,6 +56,9 @@ items=(
   "$REPO/mac-os/usr/.config/ghostty/config"
   "$HOME/.config/ghostty/config"
 
+  "$REPO/mac-os/usr/.config/herdr-app/layouts/chat.json"
+  "$HOME/.config/herdr-app/layouts/chat.json"
+
   "$REPO/mac-os/usr/.config/herdr-app/mods/prefix/main.js"
   "$HOME/.config/herdr-app/mods/prefix/main.js"
 
@@ -94,6 +97,59 @@ items=(
 )
 
 install_rows 2 install_dotfile "${items[@]}"
+
+# The mods of Herdr's chat layout, from github.com/naruse/herdr-chat with local
+# edits. Each deploys as a whole folder, so a new file in one needs no row here.
+mod_dirs=(
+  "$REPO/mac-os/usr/.config/herdr-app/mods/agents-chat"
+  "$HOME/.config/herdr-app/mods/agents-chat"
+
+  "$REPO/mac-os/usr/.config/herdr-app/mods/chat"
+  "$HOME/.config/herdr-app/mods/chat"
+
+  "$REPO/mac-os/usr/.config/herdr-app/mods/chat-changes"
+  "$HOME/.config/herdr-app/mods/chat-changes"
+
+  "$REPO/mac-os/usr/.config/herdr-app/mods/chat-file"
+  "$HOME/.config/herdr-app/mods/chat-file"
+
+  "$REPO/mac-os/usr/.config/herdr-app/mods/chat-files"
+  "$HOME/.config/herdr-app/mods/chat-files"
+
+  "$REPO/mac-os/usr/.config/herdr-app/mods/chat-pane"
+  "$HOME/.config/herdr-app/mods/chat-pane"
+
+  "$REPO/mac-os/usr/.config/herdr-app/mods/chat-status"
+  "$HOME/.config/herdr-app/mods/chat-status"
+
+  "$REPO/mac-os/usr/.config/herdr-app/mods/chat-tabs"
+  "$HOME/.config/herdr-app/mods/chat-tabs"
+
+  "$REPO/mac-os/usr/.config/herdr-app/mods/spaces-chat"
+  "$HOME/.config/herdr-app/mods/spaces-chat"
+)
+
+install_rows 2 install_dotfile_dir "${mod_dirs[@]}"
+
+# The chat shows Anthropic's own fonts, copied from the Claude app at setup so
+# the files stay out of this repo. They are copies because macOS does not
+# register a link, and the file names carry a version, so a copy the app no
+# longer ships goes first.
+claude_fonts="/Applications/Claude.app/Contents/Resources/fonts"
+if [ -d "$claude_fonts" ]; then
+  mkdir -p "$HOME/Library/Fonts"
+  for font in "$HOME/Library/Fonts"/Anthropic*.ttf; do
+    if [ -e "$font" ] && [ ! -e "$claude_fonts/$(basename "$font")" ]; then
+      rm "$font"
+    fi
+  done
+  for font in "$claude_fonts"/Anthropic*.ttf; do
+    dest="$HOME/Library/Fonts/$(basename "$font")"
+    if [ -e "$font" ] && ! cmp -s "$font" "$dest"; then
+      cp "$font" "$dest"
+    fi
+  done
+fi
 
 # The skills live in `~/.agents/skills`, the directory every agent shares, and
 # Claude Code reads them through this link.

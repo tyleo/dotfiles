@@ -135,6 +135,24 @@ install_dotfile() {
   echo "Installed $dest"
 }
 
+# Copy every file in a tracked directory to the same relative path under
+# `$HOME`, each through `install_dotfile`. Hidden files stay behind, since
+# Finder leaves a `.DS_Store` in folders it has shown.
+#
+# Args:
+# $1 - path to the directory inside the repo
+# $2 - path it deploys to
+install_dotfile_dir() {
+  local src="$1" dest="$2" file
+  if [ ! -d "$src" ]; then
+    echo "ERROR: dotfile source missing: $src" >&2
+    return 1
+  fi
+  while IFS= read -r -d '' file; do
+    install_dotfile "$file" "$dest/${file#"$src"/}"
+  done < <(find "$src" -type f ! -name '.*' -print0 | sort -z)
+}
+
 # Install a command-line tool from a vendor's signed `.pkg`, unless the version
 # it ships is already on PATH. These tools do not self-update. Pointing `$3` at
 # the latest release makes every run upgrade in place.

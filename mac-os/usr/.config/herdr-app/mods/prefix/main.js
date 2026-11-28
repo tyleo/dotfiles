@@ -7,9 +7,11 @@ import { View, div } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
 import { agents, closeOverlay, focused, hc, home, keys, nextCommand, notify, openOverlay, props, run, theme } from "herdr";
 
+// type "app": runs a Herdr command with `args`, an app one or another mod's.
 // type "pane": the output shows in a dialog that closes when the command exits.
 // type "shell": runs detached in the background.
 const COMMANDS = {
+  "chat": { type: "app", command: "chat-tabs.switch", description: "switch chat / terminal" },
   "code": { type: "shell", command: "code .", description: "code ." },
   "forklift": { type: "shell", command: "open -a ForkLift .", description: "open -a ForkLift ." },
   "git-ddth": { type: "shell", command: "git ddth", description: "git ddth" },
@@ -43,6 +45,10 @@ export default class Prefix extends View {
     }
     const c = COMMANDS[name];
     if (!c) return;
+    if (c.type === "app") {
+      run(c.command, c.args);
+      return;
+    }
     const r = await hc(["run", "--bg", "--json", "--rm", "--no-parent", "--cwd", this.cwd, "--", "sh", "-c", c.command]);
     if (r.code !== 0) throw new Error(r.stderr.trim());
     if (c.type === "pane") {

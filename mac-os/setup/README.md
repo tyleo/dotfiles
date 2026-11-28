@@ -46,3 +46,16 @@ mac-os/setup/internal/homebrew.sh # just sync the Brewfile
 | `vscode.sh`         | The listed VS Code extensions                                                   |
 
 Directly-downloaded apps (`apps-dmg.sh` / `apps-zip.sh`) own their own updates; `apps-manual.sh` and `apps-steam.sh` only nudge you - nothing is installed for those.
+
+## Herdr chat layout
+
+`dotfiles.sh` also deploys a chat layout for the Herdr app into `~/.config/herdr-app`: `layouts/chat.json`, the mods it uses, and the `ctrl-b` `c` key that switches a tab between an agent's chat and its terminal. The mods come from [naruse/herdr-chat](https://github.com/naruse/herdr-chat) (MIT) and Herdr's own shipped mods, with local edits. The chat's settings are in `mods/chat/config.js`.
+
+To set it up on a machine:
+
+1. Install the Claude app first (`apps-manual.sh` prints the link). The chat's font is Anthropic Sans, which `dotfiles.sh` copies from `/Applications/Claude.app` into `~/Library/Fonts`. Without the app the chat falls back to Herdr's interface font.
+2. Run `mac-os/setup/internal/dotfiles.sh`.
+3. Quit and reopen Herdr if the step copied fonts, since Herdr only finds a new font after a restart. Its terminals and agents keep running.
+4. Pick the layout: press `cmd-shift-l` in Herdr until it shows, or run `herdr-app do layout.switch '{"name":"chat"}'`.
+
+The chat needs `python3` and `claude` (or `codex`) on the machine. The live files are copies, so an edit made in `~/.config/herdr-app` has to be copied back into this repo to be kept.
